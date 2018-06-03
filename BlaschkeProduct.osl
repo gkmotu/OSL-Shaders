@@ -45,6 +45,6 @@ shader BlaschkeProduct(
     }
     
     float angle = atan2(prod[1], prod[0]) * 1.;
-	Out = vector(palette(angle / 6.28318 - Time * 1.9));
+	Out = vector(palette(angle / M_PI*2 - Time * 1.9));
 
 }

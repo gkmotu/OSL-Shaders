@@ -1,0 +1,50 @@
+// GLSL version mahalis
+// OSL port + modifications by Mads Drøschler
+// 5.6.2018
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
+	
+vector cM(vector a, vector b) { 
+    return vector(a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0],0);
+}
+
+vector cD(vector a, vector b) { 
+    return vector((a[0] * b[0] + a[1] * b[1]), (a[1] * b[0] - a[0] * b[1]),0) / dot(b, b);
+}
+
+vector conj(vector a) { 
+    return vector(a[0], -a[1],0);
+}
+
+vector blaschkeB(vector a, vector z) { 
+    return cD(a - z, vector(1.,0.,0) - cM(conj(a), z));
+}
+
+vector palette(float v) {
+    return vector(0.5) + 0.5 * cos(M_PI*2 * (v + vector(0.0,0.333,0.667)));
+}
+
+vector Position(float t) { 
+    return vector(sin(2.2 * t) - cos(1.4 * t), cos(1.3 * t) + sin(-1.9 * t),0) * 0.2;
+}
+
+shader BlaschkeProduct( 
+
+ 	point Po = P,
+  	float Time = 0,
+    output vector Out = 0,
+)
+{
+	point pos = Po;
+	point uv = pos - 0.5;
+    uv *= 1.;
+    
+    vector prod = vector(1.,0.,0);
+    for(int i = 0; i < 43; i++) {
+   		vector a = Position(float(i) * 37. + Time * 0.3);
+        prod = cM(prod, blaschkeB(a, uv));
+    }
+    
+    float angle = atan2(prod[1], prod[0]) * 1.;
+	Out = vector(palette(angle / 6.28318 - Time * 1.9));
+
+}

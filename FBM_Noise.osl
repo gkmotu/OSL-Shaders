@@ -55,7 +55,7 @@ shader FBM_Noise(
 		
 	point Po = P,
 	float Time = 1.0,
-	int Octaves = 7,
+	int Octaves = 16,
 	output vector Out = 0,
 )				
 {

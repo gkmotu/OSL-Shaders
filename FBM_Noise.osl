@@ -1,3 +1,6 @@
+// OSL compiled by Mads Drøschler
+// 5.6.2018
+
 float random (vector st)
 { 
 	return mod((sin(dot(st,vector(12.9898,78.233,0)))*43758.5453123),1.0);
@@ -48,7 +51,7 @@ vector hsb2rgb(vector c )
     return c[2] * mix(vector(1.0,0.0,0.0), rgb, c[1]);
 }
 
-shader FBM_Domain(
+shader FBM_Noise(
 		
 	point Po = P,
 	float Time = 1.0,

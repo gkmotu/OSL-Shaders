@@ -1,0 +1,89 @@
+// OSL version compiled and tweaked, added various variables to shader scope - by Mads Drøschler
+// 5.6.2018
+// License CC3.0 
+
+float fract ( float x )
+{
+	return x - floor(x);
+}
+	
+vector fract ( vector x )
+{
+	return x - floor(x);
+}
+	float random (vector st) {
+    
+    return fract(sin(dot(st, vector(12.9898,78.233,0)))* 43758.5453123);
+}
+
+float Noise (vector st) 
+{
+    vector i = floor(st);
+    vector f = fract(st);
+    float a = random(i);
+    float b = random(i + vector(1.0, 0.0,0));
+    float c = random(i + vector(0.0, 1.0,0));
+    float d = random(i + vector(1.0, 1.0,0));
+    vector U = f * f * (3.0 - 2.0 * f);
+
+    return mix(a, b, U[0]) + (c - a)* U[1] * (1.0 - U[0]) + (d - b) * U[0] * U[1];
+}
+
+float fbm (vector p, int Octaves) 
+{
+    float value = 0.0;
+    float freq = 1.0;
+    float amp = 0.5;    
+
+    for (int i = 0; i < Octaves; i++)
+{
+        value += amp * (Noise((p - vector(1.0)) * freq));
+        freq *= 1.9;
+        amp *= .6;
+}
+    return value;
+}
+
+float pattern(vector p, float Time, float Look, float MainfBmScale, float fBmWarpScale, int Octaves)
+{
+    vector offset = vector(-0.5);    
+    vector aPos = vector(sin(Time * 0.005), sin(Time * 0.01),0) * 1.2;
+    vector aScale = vector(MainfBmScale); 
+    float a = fbm(p * aScale + aPos,Octaves);
+    vector bPos = vector(sin(Time * 0.01), sin(Time * 0.01),0) * 6.;
+    vector bScale = vector(Look);
+    float b = fbm((p + a) * bScale + bPos, Octaves);
+    vector cPos = vector(-0.6, -0.5,0) + vector(sin(-Time * 0.001), sin(Time * 0.01),0) * 2.;
+    vector cScale = vector(fBmWarpScale); 
+    float c = fbm((p + b) * cScale + cPos, Octaves);
+    
+    return c;
+}
+
+vector palette( float t)
+{
+    vector a = vector(0.5, 0.5, 0.5);
+    vector b = vector(0.45, 0.25, 0.14);
+    vector c = vector(1.0 ,1.0, 1.0);
+    vector d = vector(0.0, 0.1, 0.2);
+    
+    return a + b * cos(2*M_PI * (c * t + d));
+}
+
+shader FBM_Flow
+(
+
+	point Po = P,
+	float Time = 0,
+	int Octaves = 20,
+	float Look = 0.2,
+	float MainfBmScale = 3.0,
+	float fBmWarpScale = 2.0,
+	output vector Out = 0,
+) 
+{
+    vector p = Po;    
+    float value = pow(pattern(p,Time,Look, MainfBmScale,fBmWarpScale, Octaves), 2.); 
+    
+    Out = palette(value);
+}

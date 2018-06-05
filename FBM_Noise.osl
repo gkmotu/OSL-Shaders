@@ -1,6 +1,6 @@
 // Ported to OSL and compiled by Mads Drøschler
 // 5.6.2018
-// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+// License CC3.0
 
 float random (vector st)
 { 
@@ -9,20 +9,20 @@ float random (vector st)
 
 float Noise (vector st)
 {
-	vector i = floor(st);
-	vector f = mod(st,1.0);
-	float a = random(i);
-    float b = random(i + vector(1.0,0.0,0));
-  	float c = random(i + vector(0.0,1.0,0));
-  	float d = random(i + vector(1.0,1.0,0));
-  	vector u = f*f*(3.0-2.0*f);
+   vector i = floor(st);
+   vector f = mod(st,1.0);
+   float a = random(i);
+   float b = random(i + vector(1.0,0.0,0));
+   float c = random(i + vector(0.0,1.0,0));
+   float d = random(i + vector(1.0,1.0,0));
+   vector u = f*f*(3.0-2.0*f);
   
-  	return mix(a,b,u[0])+(c-a)*u[1]*(1.0-u[0])+(d-b)*u[0]*u[1];
+   return mix(a,b,u[0])+(c-a)*u[1]*(1.0-u[0])+(d-b)*u[0]*u[1];
 }
 
 float fbm (vector st, int Octaves)
 {
-	float value = 0.;
+    float value = 0.;
     float amplitude = 1.;
     float frequency = 2.;
     for (int i = 0; i < Octaves; i++)

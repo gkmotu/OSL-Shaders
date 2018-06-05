@@ -1,0 +1,30 @@
+// GLSL by unknown
+// OSL by Mads Drøschler
+// 5.6.2018
+// License CC3.0
+
+float hex(vector p) 
+{
+  	p[0] *= 0.57735*2.0;
+	p[1] += mod(floor(p[0]), 2.0)*0.5;
+	p = abs((mod(p, 1.0) - 0.5));
+	
+	return abs(max(p[0]*1.5 + p[1], p[1]*2.0) - 1.0);
+}
+
+shader hex(
+	
+	point Po = P,
+	float Scale = 0.1,
+	float LineThickness = 0.5,
+	float FakeBlur = 1.0,
+	output vector Out = 0,
+)
+{
+
+	vector Pos = Po;
+	vector p = Pos/Scale; 
+	float  r = (1.0 -FakeBlur)*LineThickness;	
+	Out = vector(smoothstep(0.0, r + 0.05, hex(p)));
+	
+}

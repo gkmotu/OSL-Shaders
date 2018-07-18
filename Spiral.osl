@@ -1,0 +1,29 @@
+// GLSL decrooks
+// OSL + ugrades by Mads Drøschler
+// 6.6.2018
+// License CC3.0
+
+float spiralWave(vector p, float ratio, float rate, float scale, float Time)
+{
+    float r = length(p);
+    float theta = atan2(p[0],p[1]);
+    float logspiral = log(r)/ratio  + theta;
+   
+    return sin(rate*Time + scale*logspiral);
+}
+
+shader Spiral
+( 
+	point Po = P,
+    float Time = 0,
+    float spin = .618,
+    int amount = 3,
+    output vector Out = 0,
+)
+{
+	vector p = Po - vector(0.5,0.5,0);
+    float gray = 0.5 + 0.5 * spiralWave(p,spin,3.0,amount,Time);  
+  
+    Out = vector(gray);
+  
+}

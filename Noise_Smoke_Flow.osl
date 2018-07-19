@@ -1,3 +1,9 @@
+// GLSL version by unknown.
+// OSL version and updates by Mads Drøschler
+// 19.7.2018
+// License CC3.0 
+
+
 float fract ( float x ) {
 	return x - floor (x);}
 

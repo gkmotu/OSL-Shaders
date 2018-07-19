@@ -1,3 +1,8 @@
+// OSL version compiled and tweaked - by Mads Drøschler
+// 19.7.2018
+// License CC3.0 
+
+
 vector fract ( vector x ){
 	
 	return x - floor (x);

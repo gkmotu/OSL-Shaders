@@ -1,0 +1,101 @@
+float fract ( float x ) {
+	return x - floor (x);}
+
+vector fract ( vector x ) {
+	return x - floor (x);}
+
+
+#define NUM_OCTAVES 16
+
+
+matrix rotX(float a) {
+	float c = cos(a);
+	float s = sin(a);
+	return matrix(
+		1, 0, 0,0,
+		0, c, -s,0,
+		0, s, c,0,0,0,0,0
+	);
+}
+matrix rotY(float a) {
+	float c = cos(a);
+	float s = sin(a);
+	return matrix(
+		c, 0, -s,0,
+		0, 1, 0,0,
+		s, 0, c,0,0,0,0,0
+	);
+}
+
+float random(vector pos) {
+	return fract(sin(dot(pos, vector(12.9898, 78.233,0))) * 43758.5453123);
+}
+
+float Noise(vector pos) {
+	vector i = floor(pos);
+	vector f = fract(pos);
+	float a = random(i + vector(0.0, 0.0,0));
+	float b = random(i + vector(1.0, 0.0,0));
+	float c = random(i + vector(0.0, 1.0,0));
+	float d = random(i + vector(1.0, 1.0,0));
+	vector u = f * f * (3.0 - 2.0 * f);
+	return mix(a, b, u[0]) + (c - a) * u[1] * (1.0 - u[0]) + (d - b) * u[0] * u[1];
+}
+
+float fbm(vector pos) {
+	float v = 0.0;
+	float a = 0.5;
+	vector shift = vector(100.0);
+	matrix rot = matrix(cos(0.5), sin(0.5),0,0, -sin(0.5), cos(0.5),0,0,0,0,0,0,0,0,0,0);
+	for (int i=0; i<NUM_OCTAVES; i++) {
+		v += a * Noise(pos);
+		pos = transform(rot,pos) * 2.0 + shift;
+		a *= 0.5;
+	}
+	return v;
+}
+
+shader Noise_Smoke_Flow(
+	
+	point Po = P,
+	float Time = 0,
+	vector mouse = vector (0,0,0),
+	output vector Out = 0,
+			
+			) {
+	vector p = Po;
+
+	float t = 0.0, d;
+	
+	float time2 = mouse[0] * Time / 2.0;
+	
+	vector q = vector(0.0);
+	q[0] = fbm(p + 0.00 * time2);
+	q[1] = fbm(p + vector(1.0));
+	vector r = vector(0.0);
+	r[0] = fbm(p + 1.0 * q + vector(1.7, 9.2,0) + 0.15 * time2);
+	r[1] = fbm(p + 1.0 * q + vector(8.3, 2.8,0) + 0.126 * time2);
+	float f = fbm(p + r);
+	vector Color = mix(
+		vector(0.101961, 0.619608, 1.666667),
+		vector(0.666667, 0.666667, 1.498039),
+		clamp((f * f) * 4.0, 0.0, 1.0)
+	);
+
+	Color = mix(
+		Color,
+		vector(0, 0, 0.164706),
+		clamp(length(q), 0.0, 1.0)
+	);
+
+
+	Color = mix(
+		Color,
+		vector(0.666667, 1, 1),
+		clamp(length(r[0]), 0.0, 1.0)
+	);
+
+	Color = (f *f * f + 0.6 * f * f + 0.5 * f) * Color;
+	
+	Out = Color;
+}

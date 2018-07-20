@@ -1,0 +1,70 @@
+float fract ( float x )
+{
+	return x - floor(x);
+}
+
+vector fract ( vector x )
+{
+	return x - floor(x);
+}
+
+float gold_noise(vector coordinate, float seed)
+{
+	float PHI = 1.61803398874989484820459 * 00000.1;    
+	float PI  = 3.14159265358979323846264 * 00000.1;
+	float SRT = 1.41421356237309504880169 * 10000.0;
+    
+    return fract(sin(dot(coordinate*seed, vector(PHI, PI,0)))*SRT);
+}
+
+void Bricks(vector uv, vector div,float edgeWidth, float intensity){
+    vector orinal_uv = uv;
+    uv = fract(uv * div);
+    
+    
+    float shift = mod(floor(orinal_uv[1] * div[1]), 2.0);
+    
+    orinal_uv += fract(vector(shift / div[0] * 0.5, 0.0,0.0));
+    vector index = floor(orinal_uv * div);
+    
+    float seed = 198.34;
+    float intensitdiff = gold_noise(index, seed);
+    uv = mod(uv + vector(0.5 * shift, 0.0,0), vector(1.0)) + vector(0.5);
+    vector value = abs(uv - vector(0.5)) - vector(edgeWidth * 0.5);    
+    intensity = float(min(value[0], value[1]) > 0.0) * intensitdiff;
+}
+
+void BricksSamplerPlain(vector uv, vector div,float edgeWidth, float intensity, vector sampleUV){
+    vector orinal_uv = uv;
+    uv = fract(uv * div);
+    
+    
+    float shift = mod(floor(orinal_uv[1] * div[1]), 2.0);
+    
+    orinal_uv += fract(vector(shift / div[0] * 0.5, 0.0,0));
+    vector index = floor(orinal_uv * div);
+    
+    
+    sampleUV = index / div;
+    uv = mod(uv + vector(0.5 * shift, 0.0,0), vector(1.0)) + vector(0.5);
+    vector value = abs(uv - vector(0.5)) - vector(edgeWidth * 0.5);    
+    intensity = float(min(value[0], value[1]) > 0.0);
+}
+
+shader Bricks( 
+
+	string fileName = "",
+	point Po = P,
+	output vector col = 0,
+   )
+{
+    vector uv = Po;
+    
+    float intensity = 0.0;
+    vector sampleruv = vector(0.0);
+    
+  
+    BricksSamplerPlain(uv, vector(20, 40,0), 0.06, intensity, sampleruv);
+    
+    col = texture(fileName, sampleruv[0], 1-sampleruv[1]) * intensity;
+}

@@ -1,0 +1,88 @@
+// Compiled by Mads Drøschler 5.11.2018
+
+#define uWavyness 0.1
+#define uScale vector(3.0, 3.0,0)
+#define uOffset vector(Time, 0.0,0)
+#define uLayers 4
+#define uBaseFrequency vector(0.5, 0.5,0)
+#define uFrequencyStep vector(0.25, 0.25,0)
+
+vector fract ( vector x ) {
+	return x - floor (x) ;
+}
+void pR(vector p, float a)
+{
+    float sa = sin(a);
+    float ca = cos(a);
+    p = transform(matrix(ca, sa,0,0, -sa, ca,0,0,0,0,0,0,0,0,0,0),p);
+}
+
+float scratch(vector uv, vector seed)
+{
+    seed[0] = floor(sin(seed[0] * 51024.0) * 3104.0);
+    seed[1] = floor(sin(seed[1] * 1324.0) * 554.0);
+ 
+    uv = uv * 2.0 - 1.0;
+    pR(uv, seed[0] + seed[1]);
+    uv += sin(seed[0] - seed[1]);
+    uv = clamp(uv * 0.5 + 0.5, 0.0, 1.0);
+    
+    float s1 = sin(seed[0] + uv[1] * 3.1415) * uWavyness;
+    float s2 = sin(seed[1] + uv[1] * 3.1415) * uWavyness;
+    
+    float x = sign(0.01 - abs(uv[0] - 0.5 + s2 + s1));
+    return clamp(((1.0 - pow(uv[1], 2.0)) * uv[1]) * 2.5 * x, 0.0, 1.0);
+}
+
+float layer(vector uv, vector frequency, vector offset, float angle)
+{
+    pR(uv, angle);
+    uv = uv * frequency + offset;
+    return scratch(fract(uv), floor(uv));
+}
+
+float scratches(vector uv, float Time)
+{
+    uv *= uScale;
+    uv += uOffset;
+    vector frequency = uBaseFrequency;
+    float scratches = 0.0;
+    for(int i = 0; i < uLayers; ++i)
+    {
+        float fi = float(i);
+    	scratches += layer(uv, frequency, vector(fi, fi,0), fi * 3145.0);
+        frequency += uFrequencyStep;
+    }
+    return scratches;
+}
+
+shader Scratches(
+	point Po = P,
+	float Time = 0,
+	
+	output vector Out = 0,
+)
+{
+vector uv = Po;
+    
+   vector iResolution = vector ( 1000,1000,0.01 );
+    float AA = 4.; 
+    int AA2 = int(AA*AA);
+    float col = 0.0;
+    vector pix = 2.0/iResolution/AA; 
+    for (int i=0; i<AA2; i++){ 
+
+        float k = float(i);
+        vector uvOffs = uv + vector(floor(k/AA), mod(k, AA),0) * pix;
+        col += scratches(uvOffs,Time);
+    }
+    col /= (AA*AA);
+	
+	Out = vector(col);
+
+
+
+
+
+
+}

@@ -1,0 +1,96 @@
+// OSL compiled by Mads Drøschler 5.11.2018
+
+	vector fract ( vector x ) {
+	return x - floor ( x ) ;
+}
+
+float fract ( float x ) {
+	return x - floor ( x ) ;
+}
+
+	vector hash22(vector p, float Time) {
+        
+    float n = sin(dot(p, vector(41, 289,0)));
+    p = fract(vector(2097152., 262144.,0)*n);
+    return cos(p*6.283 + Time)*.5;
+ 
+}
+
+float smoothVoronoi(vector p, float falloff, float Time) {
+
+    vector ip = floor(p); p -= ip;
+	
+	float d = 1., res = 0.0;
+	
+	for(int i = -1; i <= 2; i++) {
+		for(int j = -1; j <= 2; j++) {
+            
+			vector b = vector(i, j,0);
+            
+			vector v = b - p + hash22(ip + b,Time);
+            
+			d = max(dot(v,v), 1e-4);
+			
+			res += 1.0/pow( d, falloff );
+		}
+	}
+
+	return pow( 1./res, .5/falloff );
+}
+
+float func2D(vector p, float Time){
+
+    
+    float d = smoothVoronoi(p*2., 4., Time)*.66 + smoothVoronoi(p*6., 4.,Time)*.34;
+    
+    return sqrt(d);
+    
+}
+
+float smoothFract(float x, float sf){
+ 
+    x = fract(x); return min(x, x*(1.-x)*sf);
+    
+}
+
+shader Smooth_Voronoi_Contours( 
+
+	point Po = P,
+	float Res = 1000,
+ 	float Time = 0,
+ 	output vector Out = 0,
+   )
+{
+    
+	vector uv = Po;
+    vector e = vector(0.001, 0,0); 
+    float f = func2D(uv,Time);     
+    float g = length( vector(f - func2D(uv-vector(e[0],e[1],0),Time), f - func2D(uv-vector(e[1],e[0],0),Time),0) )/(e[0]);  
+    g = 1./max(g, 0.001);   
+    float freq = 12.; 
+    float smoothFactor = 1000*0.0125;    
+    #ifdef GLOSSY
+    float c = smoothFract(f*freq, g*1000/16.); 
+    #else
+    float c = clamp(cos(f*freq*3.14159*2.)*g*smoothFactor, 0., 1.); 
+    #endif   
+    vector col = vector(c);
+    vector col2 = vector(c*0.64, c, c*c*0.1);    
+    #ifdef GLOSSY
+    col = mix(col, col2, -uv[1] + clamp(fract(f*freq*0.5)*2.-1., 0., 1.0));
+    #else
+    col = mix(col, col2, -uv[1] + clamp(cos(f*freq*3.14159)*2., 0., 1.0));
+    #endif
+    f = f*freq;   
+    #ifdef GLOSSY
+    if(f>8. && f<9.) col *= vector(1, 0, .1);
+    #else
+    if(f>8.5 && f<9.5) col *= vector(1, 0, .1);
+    #endif 
+  #ifdef GLOSSY
+    col += g*g*g*vector(.3, .5, 1)*.25*.25*.25*.1;
+    #endif 
+
+	Out = vector( sqrt(clamp(col, 0., 1.)));
+	
+}

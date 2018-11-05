@@ -1,0 +1,32 @@
+// Compiled by Mads Drøschler 5.11.2018
+point B(point a)
+{
+return point(log(length(a)),atan2(a[1],a[0])-6.3,0);
+}
+
+vector F(vector E, float Time)
+{
+vector e_=E;
+float c=0.;
+int i_max=48;
+float t=Time/65.*30.,C,D;
+for(int i=0; i<i_max; i++)
+	{
+	e_=B(vector(e_[0],abs(e_[1]),0))+vector(.1*sin(t/3.)-.1,5.+.1*cos(t/5.),0);
+	c += length(e_);
+	}
+float d = log2(log2(c*.05))*6.;
+return vector(.7+.7*cos(d),.5+.5*cos(d-.7),.7+.7*cos(d-.7));
+}
+
+shader Fractal3(
+	point Po = P,
+	float Time = 1.0,
+output vector Out = 0,
+)
+{
+	point Pos = Po;
+	
+	float t=Time/65.*30.,C,D;
+  Out =vector (F((Pos-vector(.3,.4,0))*(9.1-9.*cos(t/9.)),0));
+}

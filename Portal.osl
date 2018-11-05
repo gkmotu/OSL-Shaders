@@ -1,0 +1,86 @@
+// Compiled by Mads Drøschler 5.11.2018
+	
+		float rand(point n) {
+    return mod((sin(dot(n, vector(12.9898,12.1414,0))) * 83758.5453),1.0);
+}
+
+float Noise(point n) {
+    vector d = vector(0.0, 1.0,0.0);
+    vector dyx = vector(1.0,0.0,0.0);
+    vector dyy = vector(1.0, 1.0,0.0);
+    
+    vector b = floor(n);
+    vector f = smoothstep(vector(0.0), vector(1.0), mod(n,1.0));
+    return mix(mix(rand(b), rand(b + dyx), f[0]), mix(rand(b + d), rand(b + dyy), f[0]), f[1]);
+}
+
+
+vector ramp(float t) {
+	return t <= .5 ? vector( 1. - t * 1.4, .2, 1.05 ) / t : vector( .3 * (1. - t) * 2., .2, 1.05 ) / t;
+}
+
+point polarMap(point uv, float shift, float inner) {
+
+    uv = point(0.5) - uv;
+    
+    
+    float px = 1.0 - mod((atan2(uv[1], uv[0]) / 6.28 + 0.25),1.0) + shift;
+    float py = (sqrt(uv[0] * uv[0] + uv[1] * uv[1]) * (1.0 + inner * 2.0) - inner) * 2.0;
+    
+    return vector(px, py,0.0);
+}
+
+float fire(point n) {
+    return Noise(n) + Noise(n * 2.1) * .6 + Noise(n * 5.4) * .42;
+}
+
+float shade (point uv, float t) {
+    uv[0] += uv[1] < .5 ? 23.0 + t * .035 : -11.0 + t * .03;    
+    uv[1] = abs(uv[1] - .5);
+    uv[0] *= 35.0;
+    
+    float q = fire(uv - t * .013) / 2.0;
+    vector r = vector(fire(uv + q / 2.0 + t - uv[0] - uv[1]), fire(uv + q - t),0.0);
+    
+    return pow((r[1] + r[1]) * max(.0, uv[1]) + .1, 4.0);
+}
+
+vector Color(float grad) {
+    
+    float m2 = 0. < 0.0001 ? 0.15 : 0. * 3.0 / 0.;
+    grad =sqrt( grad);
+    vector Color = vector(1.0 / (pow(vector(0.5, 0.0, .1) + 2.61, vector(2.0))));
+    vector Color2 = Color;
+    Color = ramp(grad);
+    Color /= (m2 + max(vector(0), Color));
+    
+    return Color;
+
+}
+
+shader Portal( 
+	
+	
+	point Po = P,
+	float Time = 1.0,
+	output color Out = 0,
+	 	 	 	 	 	 ) 
+
+	{
+	
+	
+    float m1 = 0. < 0.0001 ? 1.6 : 0. * 5.0 / 0.;
+    
+    float t = Time;
+    point uv = Po;
+    float ff = 1.0 - uv[1];
+    point uv2 = uv;
+    uv2[1] = 1.0 - uv2[1];
+   	uv = polarMap(uv, 1.3, m1);
+   	uv2 = polarMap(uv2, 1.9, m1);
+
+    vector c1 = Color(shade(uv, t)) * ff;
+    vector c2 = Color(shade(uv2, t)) * (1.0 - ff);
+    
+    Out = vector(c1 + c2);
+}

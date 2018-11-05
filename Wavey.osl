@@ -1,0 +1,25 @@
+// Wavey 
+// Wavey.osl, by Mads Drøschler
+// Modified: 2018-02-28
+
+
+
+shader Wavey (
+	
+	point UV = P,
+	float Time = 0.0,
+	output color Col = (0.8),
+)
+
+ {
+    point Pos = UV;
+    vector col;
+    for(float j = 0.0; j < 3.0; j++){
+        for(float i = 1.0; i < 10.0; i++){
+            Pos[0] += 0.1 / (i + j) * sin(i * 10.0 * Pos[1] + Time + cos((Time / (12. * i)) * i + j));
+            Pos[1] += 0.1 / (i + j)* cos(i * 10.0 * Pos[0] + Time + sin((Time / (12. * i)) * i + j));
+        }
+    Col[int(j)] = abs(Pos[0] + Pos[1]);
+    }
+   
+}

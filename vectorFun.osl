@@ -1,0 +1,21 @@
+//Compiled by Mads Drøschler 5.11.2018
+
+shader vectorFun(
+	
+	float Time = 1.0,	 	 	
+    point Po = P,
+    int Num = 6,
+    output color Out = 0,
+) 
+{
+	point p = Po -0.5;
+	float Ti =  Time*M_PI;
+	
+		
+	vector col = vector(0, 3, 0);
+	
+	float ang = atan2(p[1],p[0]); 
+	col = vector(1)*clamp((1.0/abs(1.0+(40.0*length(p*1.0)-20.0+20.0*sin(Ti+Num*ang)))),0.0,1.0); 
+	
+	Out = col; 
+}

@@ -1,0 +1,114 @@
+// Compiled by Mads Drøschler 5.11.2018
+float Hash( float n )
+{
+    return mod((sin(n)*43758.5453),1.0);
+}
+
+float Noise( vector x )
+{
+    vector p = floor(x);
+    vector f = mod(x,1.0);
+
+    f = f*f*(3.0-2.0*f);
+
+    float n = p[0] + p[1]*57.0 + 113.0*p[2];
+
+    float res = mix(mix(mix( Hash(n+  0.0), Hash(n+  1.0),f[0]),
+                        mix( Hash(n+ 57.0), Hash(n+ 58.0),f[0]),f[1]),
+                    mix(mix( Hash(n+113.0), Hash(n+114.0),f[0]),
+                        mix( Hash(n+170.0), Hash(n+171.0),f[0]),f[1]),f[2]);
+    return res;
+}
+
+float fbm( vector p )
+{
+    float f;
+    matrix m = matrix ( 0.00,  0.80,  0.60, 0,
+    				   -0.80,  0.36, -0.48, 0,
+                       -0.60, -0.48,  0.64, 0,
+                       0,0,0,0 );
+    f  = 0.5000*Noise( p );
+    p = transform(m,p*2.02);
+    f += 0.2500*Noise( p );
+    p = transform(m,p*2.03);
+    f += 0.1250*Noise( p );
+    return f;
+}
+
+
+float scene(vector p)
+{	
+	return .1-length(p)*.04+fbm(p*.3);
+}
+
+shader VolumetricCloud(
+	
+	float Time = 1.0,
+	point Po = P,
+	output color Out = 0,
+)
+{
+	point Pos = Po;
+	vector q = Pos;
+    vector V = -1.0 + 2.0*q;
+    
+	#if 0
+    vector mo = -1.0 + 2.0*1.0;
+    #else
+	vector mo = vector(Time*.1,cos(Time*.25)*3.,0);
+	#endif
+
+    
+    vector org = 25.0*normalize(vector(cos(2.75-3.0*mo[0]), 0.7-1.0*(mo[1]-1.0), sin(2.75-3.0*mo[0])));
+	vector ta = vector(0.0, 1.0, 0.0);
+    vector ww = normalize( ta - org);
+    vector uu = normalize(cross( vector(0.0,1.0,0.0), ww ));
+    vector vv = normalize(cross(ww,uu));
+    vector dir = normalize( V[0]*uu + V[1]*vv + 1.5*ww );
+	vector Color=vector(.0);
+	
+	
+	
+	int nbSample = 64;
+	int nbSampleLight = 6;
+	
+	float zMax         = 40.;
+	float Step         = zMax/float(nbSample);
+	float zMaxl         = 20.;
+	float stepl         = zMaxl/float(nbSampleLight);
+    vector p             = org;
+    float T            = 1.;
+    float absorption   = 100.;
+	vector sun_direction = normalize( vector(1.,.0,.0) );
+    
+	for(int i=0; i<nbSample; i++)
+	{
+		float density = scene(p);
+		if(density>0.)
+		{
+			float tmp = density / float(nbSample);
+			T *= 1. -tmp * absorption;
+			if( T <= 0.01)
+				break;
+				
+				
+			
+			float Tl = 1.0;
+			for(int j=0; j<nbSampleLight; j++)
+			{
+				float densityLight = scene( p + normalize(sun_direction)*float(j)*stepl);
+				if(densityLight>0.)
+                	Tl *= 1. - densityLight * absorption/float(nbSample);
+                if (Tl <= 0.01)
+                    break;
+			}
+			
+			
+			Color += 50.*tmp*T +  vector(1.,.7,.4)*80.*tmp*T*Tl;
+		}
+		p += dir*Step;
+	}    
+
+    Out = Color;
+
+}

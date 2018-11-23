@@ -1,0 +1,37 @@
+// Compiled and modified by Mads Drøschler 23.11.2018
+
+
+shader PixelShader( 
+
+ point Po = P,
+ string fileName = "",
+float Time = 0,
+float Width = 60,
+float Length = 60, 
+output color Out = 0,
+     )
+{float lenX =5;
+float lenY = 5;
+    lenX +=0.8-lenX+Width+cos(-Time*80.0);
+    lenY +=lenY+Length+sin(-Time*20.0);
+    
+    vector gridSize = vector(1./lenX, 1./lenY,0);
+	vector uv = -Po;
+        
+    vector gridCoor = vector(floor(uv[0]*lenX),floor(uv[1]*lenY),0);
+    vector colorSampleCoor = vector(gridCoor[0]*gridSize[0]+gridSize[0]/2., -(gridCoor[1]*gridSize[1]+gridSize[1]/2.),0);
+    
+   
+    
+    float zoomlevel= 1.0;
+   
+    vector pan = vector(1.0, .0,0);
+	color colorSample = texture(fileName, (colorSampleCoor[0])/zoomlevel+pan[0],1-(colorSampleCoor[1])/zoomlevel+pan[1]);
+   colorSample = pow(colorSample,2.2);
+   
+    
+	Out = vector(colorSample);
+    
+    
+	
+}

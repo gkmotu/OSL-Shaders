@@ -1,0 +1,24 @@
+// Compiled by Mads Drøschler 30.11.2018
+	float fract ( float x ) {
+	return x - floor (x);
+	
+}
+
+	shader StarScroller(
+
+	float Time = 1.0,
+	point Po = P,
+	output vector Out = 0,
+)
+{
+	point Pos = Po;
+	float V,t=V=.001;
+	vector pos=vector(0,0,0);
+	for (float s=.0; s<2.; s+=.01) {
+		vector p=s*(Pos+pos)*t+vector(.1,.2,fract(s+floor(Time*25.)*.01));
+		for (int i=0; i<8; i++) p=abs(p)/dot(p,p)-0.8;
+		V+=dot(p,p)*t;
+	}
+	Out=vector(V, V, V * 1.0);
+	Out = pow(Out,2.2);
+}

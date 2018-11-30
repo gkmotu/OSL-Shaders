@@ -1,0 +1,20 @@
+// Compiled by Mads Drøschler 30.11.2018
+vector fract ( vector x ) {
+return x - floor (x);}
+
+float n(vector p,int j)
+{
+    p=abs(fract(p)-.5);
+    for(int i=0;i<20;++i)if(i<j*4)p+=vector(p[1],p[0],0)*vector(1,-1,0)*1.73,p[0]=abs(p[0])-1.;
+  p[1]*=.01;
+    return pow(length(p),.25)/pow(2.,float(j));
+}
+shader Fractal_02( 
+point Po = P,
+output vector Out = 0,
+  )
+{
+    vector t=Po*1.5;
+    Out =pow(vector(0,.075,.3)+vector(.54,.26,.09)*(4.+n(t*4.,5))*
+        min(min(n(t,5),n(t*.5,5)*1.5),n(t*.25,2)*2.),2.2);
+}

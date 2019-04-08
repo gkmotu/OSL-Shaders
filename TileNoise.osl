@@ -1,0 +1,195 @@
+// TileNoise.osl
+// Version 0.1a 
+// Compiled 8.4.2019 by Mads Drøschler
+// Based on Siggraph15_Schneider_Real-Time_Volumetric_Cloudscapes_of_Horizon_Zero_Dawn.pptx and Interpritated to WebGL by xwize.
+
+// This Perlin-Worley shader tiles seamlessly over UV borders.
+
+// to-do:
+// - Add all relevant Medatdata.
+// - Check for proper color/vector/point struct logic through code.
+// - Add a shuffle so user can get a completly new and random seed with a single click
+// - Integrate Time to fbm5 for turbulence, right now it just drives general .y offset.
+// - Wire up multiple internal controls to UI.
+// - Potentially make a switch for tiling to be ON or OFF? ( requires some internal IF's in the hashes and the wrap also needs a second ruleset.
+
+
+
+float fract (float x){
+	return x-floor(x);
+}
+
+vector fract (vector x){
+	return x-floor(x);
+}
+
+float Hash( output vector p, float scale){
+	p = mod(p, scale);
+	return fract(sin(dot(p, vector(27.16, 38.90,0))) * 51.53);
+}
+
+float Hash2(output vector p, float scale){
+	p = mod(p, scale);
+	return fract(sin(dot(p, vector(27.16, 38.93, 49.40))) * 51.54);
+}
+
+float Noise(output vector p, float scale){
+	vector f;
+	p *= scale;
+	f = fract(p);
+    p = floor(p);
+    f = f*f*(3.0-2.0*f);
+    float res = mix(mix(Hash(p, 				 	 scale),
+						Hash(p + vector(1.0, 0.0,0), scale), f[0]),
+					mix(Hash(p + vector(0.0, 1.0,0), scale),
+						Hash(p + vector(1.0, 1.0,0), scale), f[0]), f[1]);
+    return res;
+}
+
+float Noise2(output vector p, float scale)
+{
+    vector f;
+	p *= scale;	
+	f = fract(p);
+    p = floor(p);	
+    f = f*f*(3.0-2.0*f);	
+    
+    float resA = mix(mix(Hash2(p + vector(0.0, 0.0, 0.0), scale),
+						 Hash2(p + vector(1.0, 0.0, 0.0), scale), f[0]),
+					 mix(Hash2(p + vector(0.0, 1.0, 0.0), scale),
+					     Hash2(p + vector(1.0, 1.0, 0.0), scale), f[0]), f[1]);
+    
+    float resB = mix(mix(Hash2(p + vector(0.0, 0.0, 1.0), scale),
+						 Hash2(p + vector(1.0, 0.0, 1.0), scale), f[0]),
+					 mix(Hash2(p + vector(0.0, 1.0, 1.0), scale),
+					   	 Hash2(p + vector(1.0, 1.0, 1.0), scale), f[0]), f[1]);
+    
+    return mix(resA,resB,f[2]);
+}
+
+
+float fBm5 (output vector p, output float intScale, output float amp)
+{
+	float f = 0.0;
+    p = mod(p, intScale);
+	
+	for (int i = 0; i < 5; i++) {
+		f += Noise2(p, intScale) * amp;
+		amp *= .5;
+		intScale *= 2.;
+	}
+    
+	return min(f, 1.0);
+}
+
+vector hash3( output vector p )
+{
+    p = vector(dot(p,vector(127.1,311.7,411.0)),
+             dot(p,vector(269.5,183.3,120.0)),
+             dot(p,vector(469.5,583.3,520.0))
+            );
+    return fract(sin(p)*18.5453);
+}
+
+
+float wrap(float n, float period)
+{
+    return n >= 0.0 ? mod(n,period) : period + n;
+}
+
+vector voronoi( vector x, float per)
+{
+   
+    vector n = floor( x );
+    vector f = fract( x );
+
+	vector m = vector( 8.0 );
+    for( int k=-1; k<=1; k++ )
+    for( int j=-1; j<=1; j++ )
+    for( int i=-1; i<=1; i++ )
+    {
+        vector g = vector( float(i), float(j), float(k) );
+        vector gn = n + g; 
+        gn[0] = wrap(gn[0],per);
+        gn[1] = wrap(gn[1],per);
+        gn[2] = wrap(gn[2],per);
+        vector o = hash3(gn);
+        vector  r = g - f + o;
+		float d = dot( r, r );
+        if( d<m[0] )
+            m = vector( d, o[0],o[1] );
+    }
+
+    return vector( sqrt(m[0]), m[1]+m[2],0 );
+}
+
+
+float billows4(output vector p, output float intScale, output float amp)
+{
+    float f = 0.0;
+    p = mod(p, intScale);
+	
+	for (int i = 0; i < 4; i++) {
+		vector voroset =voronoi(p * intScale, intScale);
+		f += voroset[0] * amp;
+		amp *= .5;
+		intScale *= 2.;
+	}
+    
+	return min(f, 1.0);
+}
+
+
+float billows3(output vector p, output float intScale, output float amp)
+{
+    float f = 0.0;
+    p = mod(p, intScale);
+	
+	for (int i = 0; i < 3; i++) {
+		vector voroset = voronoi(p * intScale, intScale); 
+		f += voroset[0] * amp;
+		amp *= .5;
+		intScale *= 2.;
+	}
+    
+	return min(f, 1.0);
+}
+
+
+shader TileNoise
+[[ string help  = "Tilable Perlin Worley noise that blends over UV seams",
+   string label = "TileNoise" ]]
+
+( 
+
+point Po = P,
+ float Time = 0,
+ float billowScale = 4.0,
+ float billowAmp = 0.75,
+ float billowGamma = 1.0,
+ int noiseScale = 6,
+ float noiseAmp = 0.6,
+ float finalMix = 0.5,
+ float warpAmount = 16.0,
+ float Gamma = 2.2,
+ output color Out = 0,
+   )
+{
+	point uv = Po;
+    uv[0] *= 1.7;
+    
+    point p = vector(uv[0],uv[1]+fract(Time),0.0);
+    
+    float billowScaleIN = billowScale;
+    float billowAmpIN = billowAmp;
+    float billowGammaIN = billowGamma;
+    float noiseScaleIN = noiseScale;
+    float noiseAmpIN = noiseAmp;
+    float finalMixIN = finalMix;
+    float warpAmountIN = 1.0/warpAmount;
+    float bil = 1.0 - pow(billows3(p,billowScaleIN,billowAmpIN),billowGamma);
+    float per = fBm5(p+vector(bil * warpAmountIN),noiseScaleIN,noiseAmpIN);
+   	float fin = mix(per,bil,finalMixIN);
+	Out = vector(fin);
+	Out = pow(Out,Gamma);
+}

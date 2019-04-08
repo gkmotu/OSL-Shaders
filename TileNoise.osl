@@ -2,7 +2,7 @@
 // Version 0.1a 
 // Compiled 8.4.2019 by Mads Drøschler
 // Based on Siggraph15_Schneider_Real-Time_Volumetric_Cloudscapes_of_Horizon_Zero_Dawn.pptx and Interpritated to WebGL by xwize.
-// LISENCE: CC BY 3.0
+// LISENCE: CC BY 4.0
 
 // This Perlin-Worley shader tiles seamlessly over UV borders.
 

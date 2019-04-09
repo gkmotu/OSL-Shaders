@@ -1,6 +1,6 @@
 // TileNoise.osl
-// Version 0.1c 
-// Compiled 8.4.2019 by Mads Drøschler
+// Version 0.1d 
+// Compiled 9.4.2019 by Mads Drøschler
 // LICENSE: CC 3.0
 
 // This Perlin-Worley shader tiles seamlessly over UV borders.
@@ -93,7 +93,10 @@ float fBm5 (output vector p, output float intScale, output float amp)
 
 vector hash3( output vector p, int shuffle )
 {
-    p = vector(dot(p,vector(127.1,shuffle,411.0)),
+	float a = shuffle*2.51;
+	float b = shuffle*3.47;
+	float c = shuffle*4.12;
+    p = vector(dot(p,vector(a,b,c)),
                dot(p,vector(269.5,183.3,120.0)),
                dot(p,vector(69.4,583.3,520.0))
               );
@@ -150,24 +153,34 @@ float billows(output vector p, output float intScale, output float amp, int bill
 }
 
 shader TileNoise
-[[ string help  = "Tilable Perlin Worley noise that blends over UV seams",
-   string label = "TileNoise" ]]
+[[ string help = "<b>Tilable noise</b><br>build 0.1d<br><br><b>This noise tiles seamlessly over UV borders</b><br><br>Feature descriptions and examples?<br> Get 'em while they are HOT!<br>--->  ",
+ string URL ="https://github.com/gkmotu/OSL-Shaders/blob/master/TileNoise.png",
+ string label = "TileNoise" ]]
 ( 
-
-	point Po = P,
-	int shuffle = 12345
-	[[ string help = "A random number that gets scaled internally with 3 weights to get randomly generated startingpoints" ]]	
-	, // currently only .y expand to all axis set up a constant that branches and scales differently. Line 93.
- 	float Time = 0,
- 	int billowIter = 3,
- 	float billowScale = 4.0,
+	point Po = P
+	[[ 	string label = "UV Input",
+		string help = "Plug a UV channel in here, or a UV Transform to control position and orientation. <b>Tip</b>, you can use textures and noise maps in junction with a linear UV map to create interesting effects" ]]
+	,
+ 	int billowIter = 3
+ 	[[ string label = "Details",
+ 	string help = "Increase or decrease the amount of passes. High value (6) returns a finer structure. Low (1-2) returns a simpler structure" ]]
+ 	,
+ 	float billowScale = 4.0
+ 	[[ string label = "Scale",
+ 	string help = "Scale the billows up or down" ]]
+ 	,
  	float billowAmp = 0.75,
  	float billowGamma = 1.0,
- 	int noiseScale = 6,
+ 	int noiseScale = 6
+ 	[[ string help = " Scales the internal noise with an integer"]],
  	float noiseAmp = 0.6,
  	float finalMix = 0.5,
  	float warpAmount = 16.0,
  	float Gamma = 2.2,
+ 	float Time = 0, 	
+ 	int shuffle = 12345
+	[[ string help = "A random number that gets scaled internally with 3 weights to get randomly generated startingpoints" ]]	
+	,
  	
  	output color Out = 0,
    
@@ -188,6 +201,6 @@ shader TileNoise
     float bil = 1.0 - pow(billows(p,billowScaleIN,billowAmpIN,billowIter,shuffle),billowGamma);
     float per = fBm5(p+vector(bil * warpAmountIN),noiseScaleIN,noiseAmpIN);
    	float fin = mix(per,bil,finalMixIN);
-	Out = vector(fin);
+	Out = color(fin);
 	Out = pow(Out,Gamma);
 }

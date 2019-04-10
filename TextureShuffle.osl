@@ -43,13 +43,14 @@ shader TextureShuffle(
  point Po = P
  [[ string label = "UV Map",
  	string help = "UV Map, use a UVW Map or UV Transform" ]],
- float Time = 0.472,
+ 
  float Size = 0.013,
  string Texture = "",
  string WeightMap = "",
  output color Out = 0,
 )
 {
+	float Time = 0.472;
 	vector uv = vector(Po[0],Po[1],0);
 	uv = abs(uv-floor(uv));
 	uv[0] *= 0.06;	

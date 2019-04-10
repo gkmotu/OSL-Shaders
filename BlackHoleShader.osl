@@ -1,0 +1,25 @@
+// BlackHoleShader.osl golfed fabrice gl version.
+// Complied by Mads Drøschler
+// 10.8.19
+// CC 3.0
+
+#include <vector2.h>
+#define vec2 vector2
+#define f(a) exp(-10.*pow(length(U-.52*cos(a+vec2(0,33)) ),2.))
+
+shader BlackHoleShader( 
+
+point Po = P,
+output color Out = 0,
+ 
+   )
+{
+	float test = 1.0;
+    vec2  R = vec2(test,test);;
+     vec2     U = ( vec2(Po[0],Po[1])+vec2(Po[0],Po[1]) - R ) ;
+    
+    Out =   ( .5-.5*cos(min(6.*length(U),6.3)) ) 
+        * (    .7* vector(1,.25,.0)
+            + ( f(.65)+f(1.6)+f(2.8) ) * vector(.8,.8,.5) );
+            Out = pow(Out,vector(2)); 
+}

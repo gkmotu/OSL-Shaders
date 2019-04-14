@@ -1,19 +1,12 @@
 // TileNoise.osl
-// Version 0.1d 
-// Compiled 9.4.2019 by Mads Drøschler
+// Version 0.3b 
+// Compiled 14 April 2019 by Mads Drøschler
 // LICENSE: CC 3.0
 
-// This Perlin-Worley shader tiles seamlessly over UV borders.
+// This Perlin-Voronoi shader tiles seamlessly over UV borders.
 
-// to-do:
-// - Add all relevant Medatdata.
-// - branch shuffle axis from constants in line 92. curerntly only 1 axis hooked up.
-// - Check for proper color/vector/point struct logic through code.
-// - Add a shuffle so user can get a completly new and random seed with a single click
-// - Integrate Time to fbm5 for turbulence, right now it just drives general .y offset.
-// - Wire up multiple internal controls to UI.
-// - Potentially make a switch for tiling to be ON or OFF? ( requires some internal IF's in the hashes and the wrap also needs a second ruleset.
-
+// Read the hoover descriptions to get a brief introduction and head to the static page link
+// to see examples and more descriptions.
 
 
 float fract (float x)
@@ -46,7 +39,7 @@ float Noise(output vector p, float scale)
 	p *= scale;
 	f = fract(p);
     p = floor(p);
-    f = f*f*(3.0-2.0*f);
+    f = f*f*(3.0-2.0*f); // smoothstep to UI
     
     float res = mix(mix(Hash(p, 				 	 scale),
 						Hash(p + vector(1.0, 0.0,0), scale), f[0]),
@@ -61,7 +54,7 @@ float Noise2(output vector p, float scale)
 	p *= scale;	
 	f = fract(p);
     p = floor(p);	
-    f = f*f*(3.0-2.0*f);	
+    f = f*f*(3.0-2.0*f); // smoothstep to UI	
     
     float resA = mix(mix(Hash2(p + vector(0.0, 0.0, 0.0), scale),
 						 Hash2(p + vector(1.0, 0.0, 0.0), scale), f[0]),
@@ -96,6 +89,7 @@ vector hash3( output vector p, int shuffle )
 	float a = shuffle*2.51;
 	float b = shuffle*3.47;
 	float c = shuffle*4.12;
+	
     p = vector(dot(p,vector(a,b,c)),
                dot(p,vector(269.5,183.3,120.0)),
                dot(p,vector(69.4,583.3,520.0))
@@ -153,54 +147,115 @@ float billows(output vector p, output float intScale, output float amp, int bill
 }
 
 shader TileNoise
-[[ string help = "<b>Tilable noise</b><br>build 0.1d<br><br><b>This noise tiles seamlessly over UV borders</b><br><br>Feature descriptions and examples?<br> Get 'em while they are HOT!<br>--->  ",
- string URL ="https://github.com/gkmotu/OSL-Shaders/blob/master/TileNoise.png",
- string label = "TileNoise" ]]
+	[[
+		string label = 	"TileNoise",
+		string help = 	"<h1><b>Tile Noise</b></h1>"
+						"build 0.3b<br><br><b>"
+						"This shader tiles seamlessly over UV borders</b><br>"
+						"<br>Examples and descriptions?", 
+		string URL =	"http://masd.dk"
+						
+
+ 		 ]]
 ( 
-	point Po = P
+	point uv_input = P
 	[[ 	string label = "UV Input",
 		string help = "Plug a UV channel in here, or a UV Transform to control position and orientation. <b>Tip</b>, you can use textures and noise maps in junction with a linear UV map to create interesting effects" ]]
 	,
- 	int billowIter = 3
- 	[[ string label = "Details",
- 	string help = "Increase or decrease the amount of passes. High value (6) returns a finer structure. Low (1-2) returns a simpler structure" ]]
- 	,
- 	float billowScale = 4.0
- 	[[ string label = "Scale",
- 	string help = "Scale the billows up or down" ]]
- 	,
- 	float billowAmp = 0.75,
- 	float billowGamma = 1.0,
- 	int noiseScale = 6
- 	[[ string help = " Scales the internal noise with an integer"]],
- 	float noiseAmp = 0.6,
- 	float finalMix = 0.5,
- 	float warpAmount = 16.0,
- 	float Gamma = 2.2,
- 	float Time = 0, 	
+ 	int voronoi_details = 5
+ 	[[
+ 	 	string label = 	"Voronoi details",
+ 		string help = 	"Increase or decrease the amount of voronoi detail passes.<ul>"
+ 						"<li>Low (1-2) returns a simpler structure."
+ 						"<li>4 and higher returns finer details.<br>"
+ 						"<br>At a certain point, 6 or over, you wont see much difference from the distance." 
+ 						"</ul>",
+ 		int min =		0
+ 	]], 	
+ 	
+ 	int voronoi_scale = 4
+ 	[[ 
+ 		string label = 	"Voronoi Scale",
+ 		string help = 	"Scale the Voronoi pattern up or down." 
+ 	]],
+ 	
+ 	float voronoi_amplitude = 0.6
+ 	[[
+ 		string label =	"Voronoi Amplitude",
+ 		string help =	"The amplitude of the voronoi pattern."
+ 	]],
+ 	
+ 	float voronoi_gamma = 1.6
+ 	[[
+ 		string label =	"Voronoi Gamma",
+ 		string help =	"Gamma correct the voronoi pattern."
+ 	]],
+ 	
+ 	
+ 	int perlin_scale = 6 
+ 	[[ 
+ 		string label =	"Perlin Scale",
+ 		string help = 	"Scales the perlin noise up or down.<br>"
+ 						"<br><b>WARNING!</b><br>"
+ 						"Do not wire a float channel to this slot, only integers will work due to the nature of the internal mechanisms."
+ 	]],
+ 	
+ 	float perlin_amplitude = 0.6
+ 	[[
+ 		string label =	"Perlin Amplitude",
+ 		string help =	"The amplitude of the perlin noise."
+ 	]],
+ 	
+ 	float mix_amount = 0.5
+ 	[[ 
+ 		string label =	"Mix Amount",
+ 		string help = 	"Mix strength between noise and voronoi.<ul>"
+ 						"<li>0.0 = Perlin noise."
+ 						"<li>0.5 = A mix of Perlin and Voronoi."
+ 						"<li>1.0 = Voronoi pattern.<br>"
+ 						"<br><b>Tip:</b> You can use a non-linear input to generate variation in the mix.<br>For example the Red channel of a texture or a float value ( a noise )."
+ 						"</ul>",
+ 		float min = 0.0,
+ 		float max = 1.0,
+ 	]],
+ 	
+ 	float warp_amount = 10.0
+ 	[[
+ 		string label =	"Warp Amount",
+ 		string help = 	"Warp scale between the Perlin noise and the Voronoi pattern"
+ 	]],
+ 	
+ 	float gamma = 2.2 
+ 	[[ 
+ 		string label =	"Gamma",
+ 		string help =	"Global gamma correction"
+ 	]],	
+ 	
  	int shuffle = 12345
-	[[ string help = "A random number that gets scaled internally with 3 weights to get randomly generated startingpoints" ]]	
-	,
+	[[ 	
+		string label =	"Shuffle",
+		string help = 	"Quickly generate a new variant."
+	]]	,
  	
  	output color Out = 0,
    
    )
 {
-	point uv = Po;
-    uv[0] *= 1.7;
+	float Time = 0; // look at implementing phaze loop of noise modulations.
+	
+    point p = vector(uv_input[0],uv_input[1]+fract(Time),0.0);
     
-    point p = vector(uv[0],uv[1]+fract(Time),0.0);
-    
-    float billowScaleIN = billowScale;
-    float billowAmpIN = billowAmp;
-    float billowGammaIN = billowGamma;
-    float noiseScaleIN = noiseScale;
-    float noiseAmpIN = noiseAmp;
-    float finalMixIN = finalMix;
-    float warpAmountIN = 1.0/warpAmount;
-    float bil = 1.0 - pow(billows(p,billowScaleIN,billowAmpIN,billowIter,shuffle),billowGamma);
-    float per = fBm5(p+vector(bil * warpAmountIN),noiseScaleIN,noiseAmpIN);
-   	float fin = mix(per,bil,finalMixIN);
+    float vs = voronoi_scale;
+    float va = voronoi_amplitude;
+    float vg = voronoi_gamma;
+    float ps = perlin_scale;
+    float pa = perlin_amplitude;
+    float wa = 1.0/warp_amount;
+    float bil = 1.0 - pow(billows(p,vs,va,voronoi_details,shuffle),vg);
+    float per = fBm5(p+vector(bil * wa),ps,pa);
+   	float fin = mix(per,bil,mix_amount);
+   	
 	Out = color(fin);
-	Out = pow(Out,Gamma);
+	Out = pow(Out,gamma);
+	
 }

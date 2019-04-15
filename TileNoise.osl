@@ -1,5 +1,5 @@
 // TileNoise.osl
-// Version 0.3b 
+// Version 0.5a 
 // Compiled 14 April 2019 by Mads Drøschler
 // LICENSE: CC 3.0
 
@@ -7,6 +7,10 @@
 
 // Read the hoover descriptions to get a brief introduction and head to the static page link
 // to see examples and more descriptions.
+// LINK: https://www.masd.dk/osl_shader_tile_noise/
+
+// TO DO:
+// - Integrate some kind of phaze shifted loopable animated function to the noise(s)
 
 
 float fract (float x)
@@ -39,7 +43,7 @@ float Noise(output vector p, float scale)
 	p *= scale;
 	f = fract(p);
     p = floor(p);
-    f = f*f*(3.0-2.0*f); // smoothstep to UI
+    f = f*f*(3.0-2.0*f); 
     
     float res = mix(mix(Hash(p, 				 	 scale),
 						Hash(p + vector(1.0, 0.0,0), scale), f[0]),
@@ -54,7 +58,7 @@ float Noise2(output vector p, float scale)
 	p *= scale;	
 	f = fract(p);
     p = floor(p);	
-    f = f*f*(3.0-2.0*f); // smoothstep to UI	
+    f = f*f*(3.0-2.0*f); 	
     
     float resA = mix(mix(Hash2(p + vector(0.0, 0.0, 0.0), scale),
 						 Hash2(p + vector(1.0, 0.0, 0.0), scale), f[0]),
@@ -150,16 +154,16 @@ shader TileNoise
 	[[
 		string label = 	"TileNoise",
 		string help = 	"<h1><b>Tile Noise</b></h1>"
-						"build 0.3b<br><br><b>"
+						"build 0.5a<br><br><b>"
 						"This shader tiles seamlessly over UV borders</b><br>"
 						"<br>Examples and descriptions?", 
-		string URL =	"http://masd.dk"
+		string URL =	"https://www.masd.dk/osl_shader_tile_noise/"
 						
 
  		 ]]
 ( 
 	point uv_input = P
-	[[ 	string label = "UV Input",
+	[[ 	string label = "UV input",
 		string help = "Plug a UV channel in here, or a UV Transform to control position and orientation. <b>Tip</b>, you can use textures and noise maps in junction with a linear UV map to create interesting effects" ]]
 	,
  	int voronoi_details = 5
@@ -175,26 +179,26 @@ shader TileNoise
  	
  	int voronoi_scale = 4
  	[[ 
- 		string label = 	"Voronoi Scale",
+ 		string label = 	"Voronoi scale",
  		string help = 	"Scale the Voronoi pattern up or down." 
  	]],
  	
  	float voronoi_amplitude = 0.6
  	[[
- 		string label =	"Voronoi Amplitude",
+ 		string label =	"Voronoi amplitude",
  		string help =	"The amplitude of the voronoi pattern."
  	]],
  	
  	float voronoi_gamma = 1.6
  	[[
- 		string label =	"Voronoi Gamma",
+ 		string label =	"Voronoi gamma",
  		string help =	"Gamma correct the voronoi pattern."
  	]],
  	
  	
  	int perlin_scale = 6 
  	[[ 
- 		string label =	"Perlin Scale",
+ 		string label =	"Perlin scale",
  		string help = 	"Scales the perlin noise up or down.<br>"
  						"<br><b>WARNING!</b><br>"
  						"Do not wire a float channel to this slot, only integers will work due to the nature of the internal mechanisms."
@@ -202,13 +206,13 @@ shader TileNoise
  	
  	float perlin_amplitude = 0.6
  	[[
- 		string label =	"Perlin Amplitude",
+ 		string label =	"Perlin amplitude",
  		string help =	"The amplitude of the perlin noise."
  	]],
  	
  	float mix_amount = 0.5
  	[[ 
- 		string label =	"Mix Amount",
+ 		string label =	"Mix amount",
  		string help = 	"Mix strength between noise and voronoi.<ul>"
  						"<li>0.0 = Perlin noise."
  						"<li>0.5 = A mix of Perlin and Voronoi."
@@ -221,7 +225,7 @@ shader TileNoise
  	
  	float warp_amount = 10.0
  	[[
- 		string label =	"Warp Amount",
+ 		string label =	"Warp amount",
  		string help = 	"Warp scale between the Perlin noise and the Voronoi pattern"
  	]],
  	

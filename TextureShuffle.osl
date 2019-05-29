@@ -1,13 +1,13 @@
 // TextureShuffle.ols 
 // By Mads Drøschler
 // compiled 10.4.2019
-// Build 0.1c
+// Build 0.1d
 // LICENSE: The MIT License.
 
-// Currently semi broken, lots of control features missing.
-
-// This shader rearranges texture inputs with no visible seams.
-// The result is a variation of the original texture, maintaining look and flow, while being completly different.
+// This shader rearranges a texture input based on a weightmap. 
+// Use a pure noise or grunge splat texutres for interesting results.
+// The result is a variation of the original texture, maintaining look and flow -
+// while being either slightly or very different, based on weightmap and Size.
 
 
 float fract(float x)
@@ -15,54 +15,123 @@ float fract(float x)
 	return x-floor(x);
 }
 
-float sum(vector V) 
+float sum(vector col) 
 { 
-	return V[0]+V[1]+V[2]; 
+	return col[0]+col[1]+col[2]; 
 }
 
-vector Maps(vector x,float V,string WeightMap,string Texture,float Size)
+vector Maps(vector uv,float t,string WeightMap,string Texture,float Size, float Weight, float hashA, float hashB, int Channel)
 {
-    color kcol = texture(WeightMap,Size*x[0],1-Size*x[1]);
-    float k = kcol[0];
-    float l = k*8.0;
+    color col = texture(WeightMap,Size*uv[0],1-Size*uv[1]);
+    float k = col[Channel];
+    float l = k*Weight;
     float i = floor(l);
     float f = fract(l);
     
-    vector offa = sin(vector(16.0,26.0,0.0)*(i+0.0)); // hash
-    vector offb = sin(vector(16.0,26.0,0.0)*(i+1.0)); // hash
-	vector UVa = x+V*offa;
-    vector UVb = x+V*offb;
-    vector cola = texture(Texture,UVa[0],1-UVa[1]);
-    vector colb = texture(Texture,UVb[0],1-UVb[1]);
+    vector a = sin(vector(hashA,hashB,.0)*(i+.0)); // hash
+    vector b = sin(vector(hashA,hashB,0.0)*(i+1.)); // hash
+	vector uva = (uv+t*a); // the new scalers
+    vector uvb = (uv+t*b); // the new scalers
+    vector cola = texture(Texture,uva[0],1-uva[1]);
+    vector colb = texture(Texture,uvb[0],1-uvb[1]);
     
     return mix(cola,colb,smoothstep(0.2,0.8,f-0.1*sum(cola-colb)));
 }
 
-shader TextureShuffle( 
+shader TextureShuffle
+	[[ 	string help = 	
+						"<b>Texture Shuffle</b><br>"
+						"<i>Build 0.2a</i><br><br>"
+						"This shader shuffles a textures details around.<br>"
+						"You can fabricate copies with different texture seeds.<br><br>"
+						"Details and descriptions?<br>",
+		
+		string URL = 	"http://masd.dk",	
+	]]
+( 
+
+ string Texture = ""
+ [[ string widget="filename", 
+ 	string help = "Load a texture you want to change here",
+ ]],
+ 
+ string WeightMap = ""
+ [[string widget="filename", 
+ string help = "Load a weight map. The weight map can be a noise texture, a random painting or a photo of an old worn wall with nice patches and variance in.",
+ ]],
+ int Channel = 0
+ [[
+ 	int min = 0,
+ 	int max = 2
+ 
+ ]],
+  float Weight = 8.0
+  [[ string help = "The weight controls the strength of the internal noise. 8 is a good balance, higher values makes the noise shape step out."
+  ]],
+ 
+ float Warp = 0.472
+ ,
+ 
+ float Size = 0.013
+ [[ float min = .0,
+ 	float max = 1.,
+ ]],
+ 
+
+ float Shuffle = 1.0
+ [[ float min  = 1.0,
+    float max = 100.0,
+ 	string help = "Seeding a new layout of the fragments."
+ ]],
+
 
  point Po = P
  [[ string label = "UV Map",
- 	string help = "UV Map, use a UVW Map or UV Transform" ]],
+ 	string help = "Use a UVW Map, or a UV transform node to load a base space.",
+ ]],
+
+
+ output color Out = 0
+ [[ string label = "RGB"
+ ]],
  
- float Size = 0.013,
- string Texture = "",
- string WeightMap = "",
- output color Out = 0,
-)
+ output float x = 0
+ [[ string label = "R"
+]],
+ 
+ output float y = 0
+ [[ string label = "G"
+]],
+ 
+ output float z = 0
+ [[ string label = "B"
+]],
+  
+   
+     )
 {
-	float Time = 0.472;
-	vector uv = vector(Po[0],Po[1],0);
+
+	float hA = 16.0;
+ 	float hB = 26.0;	
+ 	float hashA = hA*Shuffle;
+ 	float hashB = hB*Shuffle;
+ 	
+ 	
+	vector uv = vector(Po[0],Po[1],0.);
 	uv = abs(uv-floor(uv));
 	uv[0] *= 0.06;	
 	uv[1] *= 0.06;
 	uv[0] += 0.02;	
 	uv[1] += 0.02;
 		
-	float f = smoothstep(0.4,0.6,sin(Time));
-    float s = smoothstep(0.4,0.6,sin(Time*2));
+	float f = smoothstep(0.4,0.6,sin(Warp));
+    float s = smoothstep(0.4,0.6,sin(Warp*2));
         
-	vector col = Maps((4.0+6.0*s)*uv,f,WeightMap,Texture,Size);
+	vector col = Maps((10.*s)*uv,f,WeightMap,Texture,Size,Weight,hashA,hashB,Channel);
 	
 	Out = color(col);
 	Out = pow(Out,2.2);
+	x = Out[0];
+	y = Out[1];
+	z = Out[2];
 }

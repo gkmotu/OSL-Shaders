@@ -1,0 +1,80 @@
+#define OCTAVES  8.0
+
+float fract ( float x ) {
+	return x - floor (x);}
+  
+float rand2(vector co){
+   return fract(cos(dot(co ,vector(12.9898,78.233,0))) * 43758.5453);
+}
+ 
+float valueNoiseSimple(vector vl) {
+   float minStep = 1.0 ;
+ 
+   vector grid = floor(vl);
+   vector gridPnt1 = grid;
+   vector gridPnt2 = vector(grid[0], grid[1] + minStep,0);
+   vector gridPnt3 = vector(grid[0] + minStep, grid[1],0);
+   vector gridPnt4 = vector(gridPnt3[0], gridPnt2[1],0);
+ 
+    float s = rand2(grid);
+    float t = rand2(gridPnt3);
+    float U = rand2(gridPnt2);
+    float V = rand2(gridPnt4);
+ 
+    float x1 = smoothstep(0., 1., fract(vl[0]));
+    float interpX1 = mix(s, t, x1);
+    float interpX2 = mix(U, V, x1);
+ 
+    float y = smoothstep(0., 1., fract(vl[1]));
+    float interpY = mix(interpX1, interpX2, y);
+ 
+    return interpY;
+}
+ 
+float fractalNoise(vector vl) {
+    float persistance = 2.0;
+    float amplitude = 0.5;
+    float rez = 0.0;
+    vector p = vl;
+ 
+    for (float i = 0.0; i < OCTAVES; i++) {
+        rez += amplitude * valueNoiseSimple(p);
+        amplitude /= persistance;
+        p *= persistance;
+    }
+    return rez;
+}
+ 
+float complexFBM(vector p, float Time) {
+    float NUM_FREQS = 32.0;
+    float slow = Time / 4.;
+    float fast = Time / 1.;
+    vector offset1 = vector(slow  , 0.,0);
+    vector offset2 = vector(sin(fast )* 0.1, 0.,0);
+ 
+    return
+        (1. + 0.35) *
+        fractalNoise( p + offset1 + fractalNoise(
+            p + fractalNoise(
+                p + 2. * fractalNoise(p - offset2)
+            )
+        )
+        );
+}
+ 
+ 
+shader Smoke(
+	point Po = P,
+	float Time = 0,
+	output vector Out = 0,
+		) {
+    vector uv = Po;
+    
+    vector blueColor = vector(0);
+    vector orangeColor2 = vector(1);
+ 
+    vector rez = mix(orangeColor2, blueColor, complexFBM(uv,Time));
+ 
+    Out = vector(rez);
+ 
+    }

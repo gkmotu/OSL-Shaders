@@ -1,13 +1,10 @@
-// Protean clouds by nimitz (twitter: @stormoid)
-// https://www.shadertoy.com/view/3l23Rh
-
-
-// Ported to OSL by Mads Drøschler 11.6.2019
+// OSL by Mads Drøschler 11.6.2019
 // No feature sets exposed in the UI currently.
 // Compiled in MAX 2020. I Dont belive this will work in 2019 in current state.
 
-
-
+// Source: WebGL
+// Protean clouds by nimitz (twitter: @stormoid)
+// https://www.shadertoy.com/view/3l23Rh
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
 // Contact the author for other licensing options
 

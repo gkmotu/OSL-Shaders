@@ -159,7 +159,7 @@ vec3 iLerp(vec3 a,vec3 b, float x)
     return clamp(ic,0.,1.);
 }
 
-shader mainImage( 
+shader Smoketunnel( 
 
  point Po = P,
  float Time = 0,

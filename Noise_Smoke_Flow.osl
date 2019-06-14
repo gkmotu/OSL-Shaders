@@ -1,7 +1,7 @@
 // GLSL version by unknown.
 // OSL version and updates by Mads Drøschler
 // 19.7.2018
-// License CC3.0 
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 
 float fract ( float x ) {

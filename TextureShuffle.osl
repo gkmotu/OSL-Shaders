@@ -3,6 +3,7 @@
 // compiled 10.4.2019
 // Build 0.1d
 // LICENSE: The MIT License.
+// I can't remember the GL Authors name.
 
 // This shader rearranges a texture input based on a weightmap. 
 // Use a pure noise or grunge splat texutres for interesting results.

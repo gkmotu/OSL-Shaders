@@ -4,6 +4,8 @@
 // License: Apache 2.0 License
 // https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/master/LICENSE.txt
 
+// The Maxscript vvector painter is done by Vojtech Cada, he is a beast!
+
 shader Flowmap
 (
 	// UV Input

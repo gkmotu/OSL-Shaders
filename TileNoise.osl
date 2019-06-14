@@ -1,7 +1,8 @@
 // TileNoise.osl
 // Version 0.5a 
 // Compiled 14 April 2019 by Mads Drøschler
-// LICENSE: CC 3.0
+// LICENSE: https://creativecommons.org/licenses/by-nc-sa/3.0/
+// I can't remember the GL Authors name.
 
 // This Perlin-Voronoi shader tiles seamlessly over UV borders.
 

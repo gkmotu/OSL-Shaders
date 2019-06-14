@@ -1,4 +1,6 @@
-// License and stuff missing, and cant remember, so will come a bit later :)
+// Compiled by Mads Drøschler 2019, I think..
+// GL Author I can't remember.
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float fract ( float x )
 {

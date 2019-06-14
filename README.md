@@ -12,4 +12,5 @@ Anything without license falls back to this license as well.
 Some shaders are conveted from shadertoy, some modified, some come from GLSLSandbox and some has been written from the ground up.
 
 Let me know if there are any license/credit issues, because some of the code I cant even remember where came from.
-Im not here to steal your work, I just train and in some cases, original sources are not available.
+I just train and in some cases, original sources are not available.
+You can contact me at gkmotu @ gmail dot com if you have any issues and I will attempt to streamline request the best I can! :)

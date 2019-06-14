@@ -1,4 +1,6 @@
 // Compiled by Mads Drøschler 5.11.2018
+// I can't remember the authors name.
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 vector rot(vector uv,float a){
 	return vector(uv[0]*cos(a)-uv[1]*sin(a),uv[1]*cos(a)+uv[0]*sin(a),0.0);

@@ -1,7 +1,7 @@
 // GLSL version mahalis
 // OSL port + modifications by Mads Drøschler
 // 5.6.2018
-// License CC3.0 
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 	
 vector cM(vector a, vector b) { 
     return vector(a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0],0);

@@ -1,7 +1,7 @@
-// BlackHoleShader.osl golfed fabrice gl version.
+// BlackHoleShader.osl golfed fabrice gl version. This guy is a beast.
 // Complied by Mads Drøschler
 // 10.8.19
-// CC 3.0
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 #include <vector2.h>
 #define vec2 vector2

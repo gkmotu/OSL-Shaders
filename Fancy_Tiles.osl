@@ -1,3 +1,7 @@
+// OSL Mads Drøschler
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
+// I cant remember the GL authors name.
+
 #define sqrt2 1.41421356
 
 vector fract ( vector x ) {

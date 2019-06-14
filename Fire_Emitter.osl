@@ -1,7 +1,7 @@
 // GLSL code by unknown
 // OSL compiled, ported 4 vector to floats - By Mads Drøschler
 // 5.6.2018
-// License CC3.0
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float fract(float x)
 {

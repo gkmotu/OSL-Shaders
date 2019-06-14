@@ -1,6 +1,7 @@
 // OSL version compiled and tweaked, added various variables to shader scope - by Mads Drøschler
 // 5.6.2018
-// License CC3.0 
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
+// I cant remember the GL Authors name.
 
 float fract ( float x )
 {

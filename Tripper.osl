@@ -1,4 +1,7 @@
 // Compiled by Mads Drøschler 5.11.2018
+// I can't remember the GL authors name.
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
+
 	shader Tripper(
 
  	point Po = P,

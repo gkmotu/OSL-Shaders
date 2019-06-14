@@ -1,4 +1,6 @@
 // Compiled by Mads Drøschler 2019
+// The cavity part is own making, the normals I cant remember where it comes from.
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 shader MadGenerator( 
 	

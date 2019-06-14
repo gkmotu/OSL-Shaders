@@ -1,6 +1,7 @@
 //Org Brandon Fogerty
 // OSL version Mads Drøschler
 // Compiled 5.11.2018
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float sphere( vector p, float radius )
 {

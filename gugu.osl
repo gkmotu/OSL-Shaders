@@ -1,5 +1,6 @@
 // Compiled by Mads Drøschler
-// License CC3.0
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
+// I can't remember the GL authors name.
 
 	vector fract ( vector x ){
 	return x - floor (x);}

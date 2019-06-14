@@ -1,6 +1,7 @@
 // BASE Rain - Compiled by Mads Drøschler 4. September 2018.
 // Added various settings to UI.
-// CC3.0
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
+// I can't remember the GL fragment authors name.
 
 float fract ( float x ) 
 {

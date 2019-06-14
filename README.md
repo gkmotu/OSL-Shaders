@@ -9,8 +9,11 @@ Made available here so you can sit and play and experiment with procedural shade
 https://creativecommons.org/licenses/by-nc-sa/3.0/
 Anything without license falls back to this license as well.
 
+*I can't rememember the names of a lot of the GL authors*
+If you stumble over it, let me know, else I will try dig up over time and implement.
+
 Some shaders are conveted from shadertoy, some modified, some come from GLSLSandbox and some has been written from the ground up.
 
 Let me know if there are any license/credit issues, because some of the code I cant even remember where came from.
 I just train and in some cases, original sources are not available.
-You can contact me at gkmotu @ gmail dot com if you have any issues and I will attempt to streamline request the best I can! :)
+If you have any issues let me know, I will attempt to streamline request the best I can! :)

@@ -1,6 +1,7 @@
 // OSL version compiled and tweaked - by Mads Drøschler
+// I can't remember the GL authors name.
 // 19.7.2018
-// License CC3.0 
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 
 vector fract ( vector x ){

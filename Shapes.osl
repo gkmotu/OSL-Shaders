@@ -1,6 +1,7 @@
 // Compiled after a small session between Martin Breidt & Mads Drøschler
+// Based on a GL I can't remember the name on the Author.
 // 14.10.2018
-//CC3.0
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 // Planned, lose external tiling feature and add internally
 // Local rotation in the shader directly ( same as above, exluding an UVtransform node )

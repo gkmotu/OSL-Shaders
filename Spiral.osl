@@ -1,7 +1,7 @@
 // GLSL decrooks
 // OSL + ugrades by Mads Drøschler
 // 6.6.2018
-// License CC3.0
+// License https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float spiralWave(vector p, float ratio, float rate, float scale, float Time)
 {

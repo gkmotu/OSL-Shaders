@@ -1,4 +1,6 @@
 // Compiled by Mads Drøschler 5.11.2018
+// I don't remember who did the GL
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 point B(point a)
 {
 return point(log(length(a)),atan2(a[1],a[0])-6.3,0);

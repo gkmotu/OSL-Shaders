@@ -1,3 +1,6 @@
+// Compiled by Mads Drøschler
+// I can't remember the GL authors name.
+// License: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float wave(vector uv, vector emitter, float speed, float phase, float timeshift){
 	float dst = distance(uv, emitter);

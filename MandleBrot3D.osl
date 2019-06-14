@@ -1,4 +1,6 @@
 // Compiled by Mads Drøschler 5.11.2018
+// I can't remember the GL authors name or it was unknown.
+// license: https://creativecommons.org/licenses/by-nc-sa/3.0/
 
 float map(vector p)
 {

@@ -6,6 +6,9 @@
 // Original is 82 lines. 
 // The OSL version is currently 264 lines.
 
+// This Voronoi-Perlin noise tiles over U and V seamlessly, it also tiles over the 3rd dimension with a phase loop.
+
+
 
 
 float fract (float x)

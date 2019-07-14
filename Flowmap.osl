@@ -1,0 +1,141 @@
+// Flowmap
+// Flowmap.osl, by Mads Drøschler
+// Modified: 2018-02-10
+// License: Apache 2.0 License
+// https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/master/LICENSE.txt
+
+// The Maxscript vvector painter is done by Vojtech Cada, he is a beast!
+
+shader Flowmap
+(
+	// UV Input
+	point  UV = point(u, v, 0),
+	
+	// Flowmap input
+	vector Flowmap = 0,
+	
+	// Actual time
+	float In  = 0 [[ string label = "Time", int timeValue = 1 ]],
+	
+	// Velocity
+	float Speed = 2.0[[ string label="Velocity"]],
+		
+	// Distortion Domain
+	float Distortion =0[[ string label="Time Distortion"]],
+	
+    // Bitmap entry
+    string Texture = "uv-grid.png" 
+  	[[ string widget="filename", 
+  	   string label="Texture",
+  	   string help="The name of the texture to look up" ]], 
+
+	float  Scale  = 1.0
+  	[[  string help = "A linear scale factor. For more complex UV manipluation, connect the UVWTransform." ]],
+	
+	string WrapMode = "periodic"
+  	[[ string widget="popup", string options = "default|black|clamp|periodic|mirror",
+  	   string label="Wrap Mode",
+  	   string help="How the texture wraps: (black, clamp, periodic or mirror)." ]],
+	  int    AutoGamma   = 1   
+  	[[ string widget="checkBox" ]],
+  float  ManualGamma = 1.0 
+  	[[ string label="Manual Gamma" ]],																									
+	
+	// Output
+	output color Out = 0,
+)
+{
+	//Time Init
+	float Calibrated = In/Speed; // Actual speeder to UI
+	float TimerMerger = Calibrated + Distortion; 
+	float Time = TimerMerger;
+	
+	// Filter and vector space
+	///vector FilterColor = vector(0.498,0.502,0);
+	///vector Subtract = Flowmap - FilterColor;
+	///vector AddNormVector = Subtract + vector(0.5,0.5,0);
+	vector ToVecSpace =  Flowmap - 0.5;
+	
+	// Initial Strength / Drag
+	float Dist = 2.0;
+	vector DistortionAmount = Dist*ToVecSpace;
+	vector Speeder = vector(0.5,0.5,0.5);
+	
+	// Timer A
+	int FloorA = int(floor(TimerMerger));
+	float SubtractA = TimerMerger - FloorA;
+	vector TimeMultiplierA = SubtractA* Speeder; 
+	
+	// Fork A
+	vector ForkA = DistortionAmount;
+	vector A_Forward = TimeMultiplierA*ForkA;
+	
+	// UV pipe A
+	vector Tiling = vector(1.0,-1.0,1.0);
+	vector UVW = (UV) * Tiling;
+	color ToABitmap = UVW + A_Forward;
+		
+	// Timer B
+	float TimeOffSetB = TimerMerger + 0.5;
+	int FloorB = int(floor(TimeOffSetB));
+	float SubtractB = TimeOffSetB - FloorB;
+	vector TimeMultiplierB = SubtractB* Speeder;
+	
+	// Fork B
+	vector ForkB = DistortionAmount;
+	vector B_Forward = TimeMultiplierB*ForkB;
+	
+	// UV pipe B
+	color ToBBitmap = UVW + B_Forward;
+		
+	// Bitmap A
+	vector A = 0;
+	float U = ToABitmap[0];
+	float V = ToABitmap[1];
+	point  PosA   = point(U,V,0);
+	point pA = PosA  / Scale;
+	color BitA = 0;
+	BitA  = texture(Texture, pA[0], 1.0-pA[1], "wrap", WrapMode, "", A);
+		
+	// Bitmap B
+	float Q = ToBBitmap[0];
+	float Z = ToBBitmap[1];
+	point  PosB   = point(Q,Z,0);
+	point pB = PosB  / Scale;
+	color BitB = 0;
+	BitB  = texture(Texture, pB[0], 1.0-pB[1], "wrap", WrapMode, "", A);
+	
+	int channels;
+	gettextureinfo(Texture, "channels", channels);	
+	if (channels < 4) 
+	A = 1.0;
+	if (AutoGamma)
+	{
+		if (!endswith(Texture, ".exr") &&
+			!endswith(Texture, ".EXR") &&
+			!endswith(Texture, ".hdr") &&
+			!endswith(Texture, ".HDR") &&
+			!endswith(Texture, ".tx")  &&
+			!endswith(Texture, ".TX"))
+		{
+			BitA = pow(BitA, 2.2);
+			BitB = pow(BitB, 2.2);
+		}
+	}
+	else
+	{
+		if (ManualGamma != 1.0)
+			BitA = pow(BitA, ManualGamma);
+			BitB = pow(BitB, ManualGamma);
+	}
+		
+	// Lerp
+	
+	float FF = 1.0;
+	int FloorLerp = int(floor(TimerMerger));
+	float SubtractLerp = TimerMerger - FloorLerp;
+	float Set = fabs(((SubtractLerp*FF)-0.5)*2);
+		
+	// Output
+	Out = mix(BitA, BitB, Set);	
+}

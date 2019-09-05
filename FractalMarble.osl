@@ -1,0 +1,194 @@
+// FractalMarble.osl
+// By Mads Drøschler
+// Last Edit: 5.9.2019
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+// WebGL version Created by S. Guillitte 2015 https://www.shadertoy.com/view/MtX3Ws
+
+
+// The current version utilizes external .h files for 2 and 4 point vector struct.
+
+#include <vector2.h>
+#define vec2 vector2
+#define vec3 vector
+#include <vector4.h>
+#define vec4 vector4
+
+vec2 cmul
+( 
+	vec2 a, 
+	vec2 b 
+)  
+{ 
+	return vec2( a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x ); 
+}
+
+vec3 ACESFilm( vec3 x ) {
+	float a = 2.51;
+	float b = 0.03;
+	float c = 2.43;
+	float d = 0.59;
+	float e = 0.14;
+	return clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0);
+}
+
+
+
+vec2 csqr
+( 
+	vec2 a
+)
+{ 
+	return vec2( a.x*a.x - a.y*a.y, 2.*a.x*a.y  ); 
+}
+
+
+matrix rot
+(
+	float a
+) 
+{
+	return matrix(cos(a),sin(a),0,0,-sin(a),cos(a),0,0,0,0,0,0,0,0,0,0);	
+}
+
+
+vec2 iSphere
+( 
+	vec3 ro, 
+	vec3 rd, 
+	vec4 sph 
+)
+{
+	vec3 oc = ro - vec3(sph.x,sph.y,sph.z);
+	float b = dot( oc, rd );
+	float c = dot( oc, oc ) - sph.w*sph.w;
+	float h = b*b - c;
+	if( h<0.0 ) return vec2(-1.0,-1.0);
+	h = sqrt(h);
+	
+	return vec2(-b-h, -b+h );
+}
+
+float map( output vec3 p, float Time, int Animate, int Iterations) {
+	
+	float res = 0.;
+	vec3 c = p;
+	for (int i = 0; i < Iterations; ++i) {
+		
+		if(Animate)
+		{
+		p =.7*abs(p+cos(Time*0.15+1.6)*0.15)/dot(p,p) -.7+cos(Time*0.15)*0.15;
+        
+		}
+		else
+		{
+       p =.7*abs(p)/dot(p,p) -.7;
+     }   
+        vec2 pyz= csqr(vec2(p[1],p[2]));
+        p= vec3(p[0],pyz.x,pyz.y);
+        p = vec3(p[2],p[0],p[1]);
+        res += exp(-19. * abs(dot(p,c)));    
+	}
+	return res/2.;
+}
+
+
+vec3 raymarch
+( 
+	vec3 ro, 
+	vec3 rd, 
+	vec2 tminmax,
+	float Time,
+	int Animate,
+	int Iterations,
+	int Roids
+	
+)
+{
+    float t = tminmax.x;
+    if(Roids)
+   
+   	 float dt = .2 - .195*cos(Time*.5);//animated
+  
+  else
+    
+    dt = .02;
+  
+  
+     vec3 col= vec3(0.);
+    float c = 0.;
+    for( int i=0; i<64; i++ )
+	{
+        t+=dt*exp(-2.*c);
+        if(t>tminmax.y)break;
+        vec3 pos = ro+t*rd;
+        
+        c = map(ro+t*rd,Time,Animate,Iterations);               
+        
+        col = .99*col+ .08*vec3(c*c, c, c*c*c);//green	
+        //col = .99*col+ .08*vec3(c*c*c, c*c, c);//blue
+    }    
+    return col;
+}
+
+shader FractalMarble
+( 
+	point Po = P,
+ 	float Time = 0,
+ 	float zoom = 1,
+ 	float Offsetx = 0,
+ 	float Offsety = 0,
+ 	int Iterations = 10,
+ 	
+   		   		  int    Animate   = 1  
+  	[[ string widget="checkBox" ]],
+  		  int    Roids   = 1  
+  	[[ string widget="checkBox" ]],
+  	
+  	
+  	
+  		  int    ACESFilmMode   = 1  
+  	[[ string widget="checkBox" ]],
+ 
+ 	output color Out = 0,
+)
+{
+    vec2 q = vec2(Po[0],Po[1]);
+    vec2 p = -1.0 + 2.0 * q;
+    vec2 m = vec2(Offsetx,Offsety);
+	m-=.5;
+
+   	// camera
+    vec3 ro = zoom*vec3(4.);
+    vec3 royz = vec3(ro[1],ro[2],0);
+    royz =transform( rot(m.y), royz );
+    ro = vec3(ro[0],royz[0],royz[1]);
+    vec3 roxz = vec3(ro[0],ro[2],0);
+    roxz =transform( rot(m.x+ 0.1*Time), roxz );
+    ro = vec3(ro[0],roxz[0],roxz[1]);
+    vec3 ta = vec3( 0.0 , 0.0, 0.0 );
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
+    vec3 vv = normalize( cross(uu,ww));
+    vec3 rd = normalize( p.x*uu + p.y*vv + 4.0*ww );
+    vec2 tmm = iSphere( ro, rd, vec4(0.,0.,0.,2.) );
+
+	// raymarch
+    vec3 col = raymarch(ro,rd,tmm,Time,Animate,Iterations,Roids);
+  //  if (tmm.x<0.)col = texture(iChannel0, rd).rgb;
+    
+    vec3 nor=(ro+tmm.x*rd)/2.;
+    nor = reflect(rd, nor);        
+    float fre = pow(.5+ clamp(dot(nor,rd),0.0,1.0), 3. )*1.3;
+      
+ 	// shade
+    
+    col =  .5 *(log(1.+col));
+    col = clamp(col,0.,1.);
+    if(ACESFilmMode)
+    {col = ACESFilm(col);
+   }
+    
+    Out = vec3( col);
+    Out = pow(Out,2.2);
+
+}

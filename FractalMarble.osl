@@ -4,7 +4,7 @@
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // WebGL version Created by S. Guillitte 2015 https://www.shadertoy.com/view/MtX3Ws
 
-
+//
 // The current version utilizes external .h files for 2 and 4 point vector struct.
 
 #include <vector2.h>

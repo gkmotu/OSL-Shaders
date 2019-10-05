@@ -1,0 +1,34 @@
+// Custom Normalcolors by Mads Drøschler
+//License:MIT
+
+shader Normal_CustomColor
+(
+	int CustomColors = 1
+	[[
+		string widget = "checkBox"
+	]],
+	color Color1 = color(1,0.5,0.1),
+	color Color2 = color(0,0.5,0.1),
+	color Color3 = color(0.4,0.8,0.1),
+	output vector Out = 0,
+)
+{
+		// min(a,b);
+	
+	if ( CustomColors == 1)
+	
+	{
+	vector x = min (N[0],Color1);
+	vector y =	min (N[1],Color2);
+	vector z = min (N[2],Color3);
+	
+	Out = x+y+z;
+
+	
+	}
+	else
+	{
+	Out = N;
+	
+	}
+}

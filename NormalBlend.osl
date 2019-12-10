@@ -13,7 +13,8 @@ vector rnm(vector A, vector B) {
 
 shader RNMNormalBlend
 	[[
-		string help = "Use this map to blend normals, the blend method is reoriented and superior to many other blend types",
+		string help = "Use this map to blend normals, the blend method is reoriented and superior to many other blend types. Remember to change your input to linear space, where gamma = 1.0",
+	
 		string category = "MDShaders"
 	]]
 (

@@ -1,0 +1,35 @@
+// VectorDispMIX.osl
+// 6.1.2020 Mads Drøschler
+// based on https://docs.arnoldrenderer.com/display/A5AFHUG/Combining+Regular+and+Vector+Displacement+Maps
+// License: Free
+
+shader VectorDispMIX
+(
+	point Pos = P,
+	color In = 0
+	[[
+		string label = "DetailMap"
+	]],
+	float scale2 = -0.8
+	[[
+		string label = "DispScale"
+	]],
+	string fileName = ""
+	[[
+		string widget = "filename"
+	]],
+	float scale = 75
+	[[
+		string label = "VectorDispHeight"
+	]],
+	output vector Out = 0,
+)
+{
+	point Po = Pos;
+	
+	vector Normal = transform("object",N)*scale2*In;
+
+	Out = texture(fileName,Po[0],1-Po[1]);
+	Out = vector(Out[0],Out[2],Out[1])*scale;
+	Out += Normal;
+}

@@ -22,10 +22,17 @@ shader VectorDispMIX
 	[[
 		string label = "VectorDispHeight"
 	]],
+	int InvertY = 0
+	[[
+		string widget = "checkBox"
+	]],
 	output vector Out = 0,
 )
 {
 	point Po = Pos;
+	
+	if (InvertY == 1 )
+	Po[1] = 1-Po[1];
 	
 	vector Normal = transform("object",N)*scale2*In;
 

@@ -1,0 +1,11 @@
+shader directional_mask
+(
+	float Multiply = 1,
+	vector axis = vector(1,0,0),
+	output color Out = 0 
+)
+{
+	vector Normal = transform("object",Ng);
+	vector Direction = dot(axis,Normal);
+	Out = Direction[0]*Multiply;
+}

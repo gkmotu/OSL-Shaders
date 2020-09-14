@@ -6,6 +6,8 @@
 // https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/master/LICENSE.txt
 
 color Blend
+[[
+	string category = "MDShaders" ]]
 (
 	string BlendMode,
 	color A, 
@@ -128,9 +130,7 @@ float Mixer ( float Mix, float Visibility )
 
 shader Layers
 	[[ 		
-				string help			=	"<h1><b>Layers</b></h1>"
-										"Get a copy before we run out!<br><br><b>"
-										"Photoshop layers in OSL, add your stacked layers workflow directly!</b><br>"
+				string help			=	"<b>Layers</b>"										
 	]]
 (
 	// Layer 10 inputs
@@ -144,17 +144,18 @@ shader Layers
 				string label 		= 	"10:Mix"
 	]],
 	
-	float Visibility10 = 100.0
+	int Visibility10 = 1
 	[[ 
-				string label 		= 	"10:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"10:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable10 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"10:Visibility" 
+				string label 		= 	"10:Visibile" 
 	]],
 	
 	string BlendMode10 = "Normal" 
@@ -162,7 +163,7 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label		=	"10:Blend",
+		   		string label		=	"10:Blend Mode",
 		   		int editable		=	0 
 	]],
 	
@@ -177,17 +178,18 @@ shader Layers
 				string label 		= 	"9:Mix"
 	]],
 	
-	float Visibility9 = 100.0
+	int Visibility9 = 1
 	[[ 
-				string label 		= 	"9:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"9:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable9 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"9:Visibility" 
+				string label 		= 	"9:Visibile" 
 	]],
 	
 	string BlendMode9 = "Normal" 
@@ -195,8 +197,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"9:Blend",
-		   		int editable			=	0 
+		   		string label		=	"9:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 8 inputs
@@ -210,17 +212,18 @@ shader Layers
 				string label 		= 	"8:Mix"
 	]],
 	
-	float Visibility8 = 100.0
+	int Visibility8 = 1
 	[[ 
-				string label 		= 	"8:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"8:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable8 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"8:Visibility" 
+				string label 		= 	"8:Visibile" 
 	]],
 	
 	string BlendMode8 = "Normal" 
@@ -228,8 +231,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"8:Blend",
-		   		int editable			=	0 
+		   		string label		=	"8:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 7 inputs
@@ -243,17 +246,18 @@ shader Layers
 				string label 		= 	"7:Mix"
 	]],
 	
-	float Visibility7 = 100.0
+	int Visibility7 = 1
 	[[ 
-				string label 		= 	"7:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"7:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable7 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"7:Visibility" 
+				string label 		= 	"7:Visibile" 
 	]],
 	
 	string BlendMode7 = "Normal" 
@@ -261,8 +265,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"7:Blend",
-		   		int editable			=	0 
+		   		string label		=	"7:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 6
@@ -276,17 +280,18 @@ shader Layers
 				string label 		= 	"6:Mix"
 	]],
 	
-	float Visibility6 = 100.0
+	int Visibility6 = 1
 	[[ 
-				string label 		= 	"6:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"6:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable6 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"6:Visibility" 
+				string label 		= 	"6:Visibile" 
 	]],
 	
 	string BlendMode6 = "Normal" 
@@ -294,8 +299,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"6:Blend",
-		   		int editable			=	0 
+		   		string label		=	"6:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 5 inputs
@@ -309,17 +314,18 @@ shader Layers
 				string label 		= 	"5:Mix"
 	]],
 	
-	float Visibility5 = 100.0
+	int Visibility5 = 1
 	[[ 
-				string label 		= 	"5:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"5:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable5 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"5:Visibility" 
+				string label 		= 	"5:Visibile" 
 	]],
 	
 	string BlendMode5 = "Normal" 
@@ -327,8 +333,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"5:Blend",
-		   		int editable			=	0 
+		   		string label		=	"5:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 4 inputs
@@ -342,17 +348,18 @@ shader Layers
 				string label 		= 	"4:Mix"
 	]],
 	
-	float Visibility4 = 100.0
+	int Visibility4 = 1
 	[[ 
-				string label 		= 	"4:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"4:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable4 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"4:Visibility" 
+				string label 		= 	"4:Visibile" 
 	]],
 	
 	string BlendMode4 = "Normal" 
@@ -360,8 +367,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"4:Blend",
-		   		int editable			=	0 
+		   		string label		=	"4:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 3 inputs
@@ -375,17 +382,18 @@ shader Layers
 				string label 		= 	"3:Mix"
 	]],
 	
-	float Visibility3 = 100.0
+	int Visibility3 = 1
 	[[ 
-				string label 		= 	"3:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"3:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable3 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"3:Visibility" 
+				string label 		= 	"3:Visibile" 
 	]],
 	
 	string BlendMode3 = "Normal" 
@@ -393,8 +401,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"3:Blend",
-		   		int editable			=	0 
+		   		string label		=	"3:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 2 inputs
@@ -409,17 +417,18 @@ shader Layers
 	]],
 	
 	
-	float Visibility2 = 100.0
+	int Visibility2 = 1
 	[[ 
-				string label 		= 	"2:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"2:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable2 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"2:Visibility" 
+				string label 		= 	"2:Visibile" 
 	]],
 	
 	string BlendMode2 = "Normal" 
@@ -427,8 +436,8 @@ shader Layers
 				string widget		=	"popup",
 		   		string help			= 	"Normal, Average, Darken, Multiply, Color Burn, Linear Burn, Lighten, Screen, Color Dodge, Linear Dodge, Spotlight, Spotlight Blend, Overlay, Hard Light, Soft Light, Pin Light, Hard Mix, Difference, Exclusion, Subtract, Divide, Hue, Saturation, Color, Value",
 		   		string options		= 	"Normal|Average|Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Spotlight|Spotlight Blend|Overlay|Hard Light|Soft Light|Pin Light|Hard Mix|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Value",
-		   		string label			=	"2:Blend",
-		   		int editable			=	0 
+		   		string label		=	"2:Blend Mode",
+		   		int editable		=	0 
 	]],
 	
 	// Layer 1 inputs				
@@ -440,21 +449,22 @@ shader Layers
 	float Layer1Mix = 1.0
 	[[ 
 				string label 		= 	"1:Mix",
-				float min				=	0.0,
-				float max				=	1.0,
+				float min			=	0.0,
+				float max			=	1.0,
 	]],
 	
-	float Visibility1 = 100.0
+	int Visibility1 = 1
 	[[ 
-				string label 		= 	"1:Visibility",
-				float min 			= 	0.0,
-				float max 			= 	100.0
+				string label 		= 	"1:On/Off",
+				string widget		=	"checkbox",
+				int min 			= 	0,
+				int max 			= 	1
 	]],
 	
 	int   Enable1 = 1 
 	[[ 
 				string widget		=	"checkBox",
-				string label 		= 	"1:Visibility" 
+				string label 		= 	"1:Visibile" 
 	]],
 	
 	// RGB & Alpha outputs.

@@ -1,6 +1,6 @@
 // Layers.osl
 // By Mads Drøschler
-// Modified: 1.9.2019
+// Modified: 14.9.2020
 // Blend rutines from Autodesk Composit.osl, restructured and formatted in external functions for multiple calls.
 // Copyright 2019 Autodesk Inc, All rights reserved. This file is licensed under Apache 2.0 license
 // https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/master/LICENSE.txt

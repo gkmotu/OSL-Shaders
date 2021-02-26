@@ -7,9 +7,7 @@
 // https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/master/LICENSE.txt
 
 shader FrontBack
-	[[
-	string category = "MDShaders" 
-	]]
+	
 (
 	color Front = color(1,0,0),
 	color Back  = color(0,1,0),

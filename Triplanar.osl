@@ -1,0 +1,349 @@
+// Triplanar mapping
+// Triplanar.osl, by Mads Drøschler
+// Modified: 02-28-2021
+// License: MIT Copyright Mads Drøschler
+
+// ID and random generator
+float ID(int InstanceMode, int RandFlip, string Mode)
+{
+	float id;
+	
+	if (Mode == "Instance" )
+{
+	string ID = "theThing(tm)";
+	getattribute("nodeName", ID);	
+	int Hash = hash(ID);
+	InstanceMode < 1 ? Hash = 0 : Hash = Hash;
+	id = noise("cell", vector(abs(Hash), abs(RandFlip), 11));
+}
+else
+{
+	int ID;
+	getattribute("paID", ID);
+	int Hash = hash(ID);
+	InstanceMode < 1 ? Hash = 0 : Hash = Hash;
+	id = noise("cell", vector(abs(Hash), abs(RandFlip), 11));
+}						
+	return id;
+}
+
+// Texture 
+color Texture (string Texture, float x, float y)
+{
+	return texture(Texture,x,1-y,"wrap", "periodic");
+}
+
+// Blend
+float Blend (float blur, color BlendMap)
+{	
+	return mix(1,BlendMap[0],0.5)/(blur/10);	
+}
+
+shader Triplanar
+	[[
+		string help = 		"<h3>Triplanar</h3>"
+							"Map surfaces automatically<br>",
+							string category = "Projection"
+	]]
+(
+	// Texture loader
+	string Tex1 = ""
+	[[
+		string widget = 	"filename",
+		string widget = 	"null",
+		int connectable = 	0,
+		string help = 		"Load a texture to the Triplanar map."
+	]],
+	
+	// Blend map 
+	color BlendMap = 1
+	[[
+		string widget = 	"null",
+		string help =		"Pick a map to control the blend area. ( Use an OSL noise for example. ). This can help breaking up "
+	]],
+		
+	//Debug
+	string UVC = "uvwunwrap\uv_checker.png"
+	[[
+		string widget = 	"filename",
+		string widget = 	"null",
+		int connectable = 	0,
+	]],
+	
+	int RandVal = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help =		"Enable to randomize the transforms on the object."
+	]],
+	
+	int RandFlip = 12345
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help =		"Random seed for the transform values."
+	]],
+	
+	string Override = "Non"
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string widget =		"popup", 
+		string options = 	"Non|UVMap|RGB",
+		string help =		"Pick an override mode for debug purposes."
+	]],
+
+	string Mode = "Instance"
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string widget =		"popup", 
+		string options = 	"Instance|Particle",
+		string help =		"Pick a mode for either normal instances or particles"
+	]],
+		
+	float blur = 1.0
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		float min = 		0,
+		float max = 		2,
+		string help =		"Width of the blend area between the XYZ projections."
+	]],
+	int InstanceMode = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help =		"Enable pr Object/Instance random transforms."
+	]],
+	 
+	// Scale
+	int scaleUniform =1
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help =		"Scale the XYZ projections uniformly."
+	]],
+	
+	float scaleU = 100
+	[[ 
+		int connectable = 	0,
+	]],
+	
+	float scaleV = 100
+	[[
+		int connectable = 	0,
+	]],
+	
+	float scaleU_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 0,
+	]],
+	float scaleV_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+	]],
+	
+	// Position 
+	int PosUniform =1
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help =		"Offset the XYZ projections uniformly."
+	]],
+	
+	float PosU = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float PosV = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float PosU_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float PosV_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	// Rotation
+	int RotUniform  =1
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help = 		"Rotate the XYZ projections uniformly."
+	]],
+	
+	float Rotx = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float Roty = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float Rotz = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float Rotx_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float Roty_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+	
+	float Rotz_max = 0
+	[[
+		string widget = 	"null",
+		int connectable = 	0
+	]],
+		
+	// General inits
+	float Gamma = 2.2
+	[[
+		string widget = 	"null",
+		int connectable = 	0,
+		string help = 		"Set the texture gamma, default 2.2."
+	]],
+	
+	output color ColRGB = 0
+	[[
+		string label = 		"Col(RGB)",
+		string help =		"Output of the Triplanar map."
+	]],
+)
+{
+	// Various inits
+	point uv = transform("object",P);
+	color BitX,BitY,BitZ;
+	point uvx, uvy, uvz;	
+	vector x = vector(1,0,0);
+	vector y = vector(0,1,0);
+	vector z = vector(0,0,1);
+	
+	// Blend area
+	float Blender = Blend(blur+0.07,BlendMap);
+				
+	// Normal
+	vector Nor = pow(abs(transform("object",N)),Blender);
+	Nor = Nor/(Nor[0]+Nor[1]+Nor[2]);
+	
+	// ID and Random generator	
+	float ratio = ID(InstanceMode,RandFlip,Mode);
+		
+	// Random Rotation 	
+	float RandX = mix(Rotx, Rotx_max, ratio);
+	RandVal < 1 ? RandX = 0 : RandX = RandX;	
+	float RandY = mix(Roty, Roty_max, ratio);
+	RandVal < 1 ? RandY = 0 : RandY = RandY;	
+	float RandZ = mix(Rotz, Rotz_max, ratio);
+	RandVal < 1 ? RandZ = 0 : RandZ = RandZ;
+	
+	// Rotation	
+	if ( RotUniform == 1)
+	{
+		uvx = rotate(uv, radians(Rotz-90+RandZ),0,x);
+		uvy = rotate(uv, radians(90+-Rotz+RandZ),0,y);
+		uvz = rotate(uv, radians(Rotz+RandZ),0,z);
+	}
+	else
+	{
+		uvx = rotate(uv, radians(Rotx-90+RandX),0,x);
+		uvy = rotate(uv, radians(90+-Roty+RandY),0,y);
+		uvz = rotate(uv, radians(Rotz+RandZ),0,z);
+	}
+	
+	// Random Position
+	float RandX_pos = mix(PosU, PosU_max, ratio);
+	RandVal < 1 ? RandX_pos = 0 : RandX_pos = RandX_pos;	
+	float RandY_pos = mix(PosV, PosV_max, ratio);
+	RandVal < 1 ? RandY_pos = 0 : RandY_pos = RandY_pos;
+	
+	// Position
+	if (PosUniform == 0 )
+	{
+		uvx[2] +=PosU+0.5+RandX_pos;
+		uvx[1] -=PosV+0.5+RandY_pos;
+		uvy[0] -=PosV+0.5+RandY_pos;
+		uvy[2] +=PosU+0.5+RandX_pos;
+		uvz[0] -=PosU+0.5+RandX_pos;
+		uvz[1] -=PosV+0.5+RandY_pos;
+	}
+	else
+	{
+		uvx[2] +=PosU+0.5+RandX_pos;
+		uvx[1] -=PosU+0.5+RandX_pos;
+		uvy[0] -=PosU+0.5+RandX_pos;
+		uvy[2] +=PosU+0.5+RandX_pos;
+		uvz[0] -=PosU+0.5+RandX_pos;
+		uvz[1] -=PosU+0.5+RandX_pos;
+	}
+		
+	// Random scale
+	float RandX_scale = mix(scaleU, scaleU_max, ratio);
+	RandVal < 1 ? RandX_scale = 0 : RandX_scale = RandX_scale;		
+	float RandY_scale = mix(scaleV, scaleV_max, ratio);
+	RandVal < 1 ? RandY_scale = 0 : RandY_scale = RandY_scale;
+	float RandZ_scale = mix(scaleU, scaleU_max, ratio);
+	RandVal < 1 ? RandZ_scale = 0 : RandZ_scale = RandZ_scale;
+		
+	// Scale
+	if ( scaleUniform == 0 )
+	{
+		uvx[2] /= scaleU;
+		uvx[1] /= scaleV;
+		uvy[2] /= scaleU;
+		uvy[0] /= scaleV;
+		uvz[0] /= scaleU;
+		uvz[1] /= scaleV;
+		
+		uvx += RandX_scale;
+		uvy += RandY_scale;
+		uvz += RandZ_scale;
+	}
+	else
+	{
+		uvx /= scaleU+RandZ_scale;
+		uvy /= scaleU+RandZ_scale;
+		uvz /= scaleU+RandZ_scale;
+	}
+
+	Override == "UVMap" ? BitX = Texture(UVC,uvx[2],uvx[1]) : BitX = Texture(Tex1,uvx[2],uvx[1]);	
+	Override == "UVMap" ? BitY = Texture(UVC,uvy[2],uvy[0]) : BitY = Texture(Tex1,uvy[2],uvy[0]);			
+	Override == "UVMap" ? BitZ = Texture(UVC,uvz[0],uvz[1]) : BitZ = Texture(Tex1,uvz[0],uvz[1]);		
+		
+	// Map to projections
+	BitX *=Nor[0];
+	BitY *=Nor[1];
+	BitZ *=Nor[2];
+
+	// Collect										
+	ColRGB = pow(BitX+BitY+BitZ,Gamma);
+	 											 											 											 											 									 											 											 											 											 											 										
+	// RGB Debug		
+	Override == "RGB" ? ColRGB = Nor[0]*x + Nor[1]*y + Nor[2]*z :0;
+}

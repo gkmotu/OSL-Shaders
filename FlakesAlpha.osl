@@ -1,0 +1,9 @@
+
+shader FlakesAlpha
+(
+	color In = 0.0,
+	output float A = 0,
+)
+{
+	In[0] > 0.5 or In[0] < 0.5 ? A = 1 : A = 0;
+}

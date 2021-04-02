@@ -3,10 +3,10 @@
 // Modified: 2021-04-02
 // License MIT Copyright Mads Drøschler
 
-vector TileHash ( output vector x, int tileSize ) {
+vector TileHash ( output vector x, int tileSize, int seed ) {
 
 	x = mod(x,tileSize);
-	return noise("hash",x);
+	return noise("hash",x,seed);
 }
 
 vector ID(vector x, int seed,int Tiling,int tileSize)
@@ -20,7 +20,7 @@ vector ID(vector x, int seed,int Tiling,int tileSize)
     for( int i=-1; i<=1; i++ ){
     	
     	vector g = vector( float(i), float(j),float(k) );  	
-    	Tiling? o = TileHash(n+g,tileSize) : o = noise("hash",n+g,seed);
+    	Tiling? o = TileHash(n+g,tileSize,seed) : o = noise("hash",n+g,seed);
         vector r = g - f + (0.5+0.5*sin(M_2PI*o));
         float s = dot(r, r);      
         s<m[0] ? m = vector(s, o[0], o[1]):0;

@@ -1,6 +1,6 @@
 // Make glint reflections, ice, snow, and car shaders for example.
 // Flakes.osl, by Mads Drøschler
-// Modified: 2021-02-31
+// Modified: 2021-04-02
 // License MIT Copyright Mads Drøschler
 
 vector TileHash ( output vector x, int tileSize ) {
@@ -45,7 +45,7 @@ shader Flakes
 	]]	
 (	
 	// Inputs
-	float scale = 0.2
+	float scale = 1.0
 	[[
 		string widget = "null",
 		int connectable = 0,
@@ -133,7 +133,7 @@ shader Flakes
 
 	// Scale	
 	!Tiling ? pos = pos : pos = pos*tileSize;
-	float sc = scale;
+	float sc = 1/scale;
 	!Tiling ? sc = sc : sc = 1.0;
 	
 	// Point

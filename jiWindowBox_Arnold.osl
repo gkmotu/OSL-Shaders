@@ -34,55 +34,47 @@ shader jiWindowBox_Arnold
 	]]
 (  
     float Hue = 0
-    [[
-    	int connectable = 0, 
+    [[ 
     	string widget = "null"
     ]],
     
     float Saturation = 1
     [[
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
     float Value = 1
     [[
-    	int connectable = 0, 
     	string widget = "null"
     ]],
         
     color InputMin   = 0.0
     [[ 
     	string help = "The input value that maps to the darkest output. Incoming black level. ", 
-    	int connectable = 0, 
     	string widget = "null"   	
     ]],  
     
     color InputMax   = 1.0
     [[ 
     	string help = "The input value that maps to the brightst output. Incoming white level. ", 
-    	int connectable = 0, 
     	string widget = "null"    
     ]], 
     
     float MidTones = 1.0
     [[ 
     	string help = "Adjusts the MidTones/Gamma.",float min   = 0.01, float max = 9.99,
-    	int connectable = 0, 
     	string widget = "null"    
     ]],
     
     color OutputMin  = 0.0
     [[ 
     	string help = "The output black level.",
-   		int connectable = 0, 
-    	string widget = "null"
+   		string widget = "null"
     ]],  
     
     color OutputMax  = 1.0
     [[ 
     	string help = "The output white level.",
-    	int connectable = 0, 
     	string widget = "null"    
     ]],
     
@@ -90,14 +82,12 @@ shader jiWindowBox_Arnold
     [[ 
     	string widget = "checkBox",
     	string help = "Clamp the output to the 0-1 range for each component",
-    	int connectable = 0, 
     	string widget = "null"    
     ]],
                
     int zUpAxis = 0
     [[ 
     	string widget = "checkBox",
-    	int connectable = 0, 
     	string widget = "null"
     ]],
    
@@ -107,21 +97,18 @@ shader jiWindowBox_Arnold
     string input_tex = ""
     [[
     	string widget = "filename",
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
     int textureFlip = 0 
     [[ 
     	string widget = "checkBox",
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
     int textureFlop = 0 
     [[ 
     	string widget = "checkBox",
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
@@ -129,30 +116,26 @@ shader jiWindowBox_Arnold
     [[ 
     	float min = 0.1, 
     	float max = 100,
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
     float widthOverscan = 0 
     [[ 
     	float min = 0.0, 
-    	float max = 0.9,
-    	int connectable = 0, 
+    	float max = 0.9, 
     	string widget = "null"
     ]],
     
     float heightOverscan = 0 
     [[ 
     	float min = 0.0, 
-    	float max = 0.9,
-    	int connectable = 0, 
+    	float max = 0.9, 
     	string widget = "null"
     ]],   
     
     int enableMidground = 0 
     [[ 
-    	string widget = "checkBox",
-    	int connectable = 0, 
+    	string widget = "checkBox", 
     	string widget = "null"
     ]],
     
@@ -160,33 +143,28 @@ shader jiWindowBox_Arnold
     [[ 
     	float min = 0.05, 
     	float max = 99,
-    	int connectable = 0, 
     	string widget = "null"
     ]],  
     
     float midgroundOffsetX = 0
-    [[
-    	int connectable = 0, 
+    [[ 
     	string widget = "null"
     
     ]],
     
     float midgroundOffsetY = 0
     [[
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     
     float windowAspect = 0
     [[
-    	int connectable = 0, 
     	string widget = "null" 
     ]],  
     
     int enableCurtains = 0 
     [[ 
     	string widget = "boolean",
-    	int connectable = 0, 
     	string widget = "null"
     ]],
     

@@ -4,27 +4,15 @@
 // License: MIT Copyright Mads Drøschler
 
 // ID and random generator
-float ID(int InstanceMode, int RandFlip, string Mode)
+float ID(int InstanceMode, int RandFlip)
 {
 	float id;
-	
-	if (Mode == "Instance" )
-{
 	string ID = "theThing(tm)";
 	getattribute("nodeName", ID);	
 	int Hash = hash(ID);
 	InstanceMode < 1 ? Hash = 0 : Hash = Hash;
-	id = noise("cell", vector(abs(Hash), abs(RandFlip), 11));
-}
-else
-{
-	int ID;
-	getattribute("paID", ID);
-	int Hash = hash(ID);
-	InstanceMode < 1 ? Hash = 0 : Hash = Hash;
-	id = noise("cell", vector(abs(Hash), abs(RandFlip), 11));
-}						
-	return id;
+	
+	return id = noise("cell", vector(abs(Hash), abs(RandFlip), 11));
 }
 
 // Texture 
@@ -42,8 +30,7 @@ float Blend (float blur, color BlendMap)
 shader Triplanar
 	[[
 		string help = 		"<h3>Triplanar</h3>"
-							"Map surfaces automatically<br>",
-							string category = "Projection"
+							"Map surfaces automatically<br>"
 	]]
 (
 	// Texture loader
@@ -91,15 +78,6 @@ shader Triplanar
 		string widget =		"popup", 
 		string options = 	"Non|UVMap|RGB",
 		string help =		"Pick an override mode for debug purposes."
-	]],
-
-	string Mode = "Instance"
-	[[
-		string widget = 	"null",
-		int connectable = 	0,
-		string widget =		"popup", 
-		string options = 	"Instance|Particle",
-		string help =		"Pick a mode for either normal instances or particles"
 	]],
 		
 	float blur = 1.0
@@ -237,6 +215,10 @@ shader Triplanar
 	]],
 )
 {
+	// Skip empty files
+	if (Tex1 == "")
+		return;
+	
 	// Various inits
 	point uv = transform("object",P);
 	color BitX,BitY,BitZ;
@@ -253,7 +235,7 @@ shader Triplanar
 	Nor = Nor/(Nor[0]+Nor[1]+Nor[2]);
 	
 	// ID and Random generator	
-	float ratio = ID(InstanceMode,RandFlip,Mode);
+	float ratio = ID(InstanceMode,RandFlip);
 		
 	// Random Rotation 	
 	float RandX = mix(Rotx, Rotx_max, ratio);

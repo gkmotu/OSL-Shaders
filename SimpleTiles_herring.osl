@@ -1,0 +1,275 @@
+// Tiles, Bricks and other Patterns
+// SimpleTiles.osl, by Zap Andersson
+// Modified: 2019-11-25
+// Copyright 2019 Autodesk Inc, All rights reserved. This file is licensed under Apache 2.0 license
+//    https://github.com/ADN-DevTech/3dsMax-OSL-Shaders/blob/license/LICENSE.txt
+ 
+
+#define PARAM lookup,fluvw+point(xx,0,0),GapWidth*0.05,Tiling,Edge*0.1,Bump,HitIdx
+
+// Do a single rectangle		
+int doRect(float loX, float hiX, float loY, float hiY, int Tile, int InIdx, float Radius,
+	// Layout of these match the PARAM macro above
+	point uvw, point baseuvw, float GapWidth, vector Tiling, float Edge, output float Bump, output int Index
+)
+{
+	float x = uvw[0] / Tiling[0], y = uvw[1] / Tiling[1];	
+	
+	float lox = loX / Tiling[0];
+	float hix = hiX / Tiling[0];	
+	float loy = loY / Tiling[1];
+	float hiy = hiY / Tiling[1];	
+	
+
+	// First quick rejection when being outside the rectangle	
+	if (x < lox + GapWidth || 
+	    x > hix - GapWidth || 
+	    y < loy + GapWidth ||
+	    y > hiy - GapWidth)
+	    return 0;
+	        
+	// Turn coordinate into circle
+	float gwr = GapWidth + Radius;	
+
+	float lx = x - (lox + gwr);
+	float ly = y - (loy + gwr);
+	float hx = x - (hix - gwr);
+	float hy = y - (hiy - gwr);
+
+	// Now compute special-circle-coordinate
+	// which is really the edges around the rectangle
+	vector dp = vector(lx<0?lx:(hx>0?hx:0.0), ly<0?ly:(hy>0.0?hy:0.0), 0.0);	
+	float  d = length(dp);	
+	// Outside the radius - we missed
+	if (d > Radius) return 0;
+
+	// Inside? Compute the bump as a Smoothstep		
+	if (Radius > Edge)	
+		Bump = 1.0 - smoothstep(Radius-Edge, Radius+Edge, d);
+	else
+	{
+		// If there is an Edge but the radius is smaller, we
+		// need to compute the bump differently...
+		float lx = x - (lox + GapWidth);
+		float ly = y - (loy + GapWidth);
+		float hx = x - (hix - GapWidth);
+		float hy = y - (hiy - GapWidth);		
+		Bump  = smoothstep(-Edge, Edge,  lx);
+		Bump *= smoothstep(-Edge, Edge, -hx);
+		Bump *= smoothstep(-Edge, Edge,  ly);
+		Bump *= smoothstep(-Edge, Edge, -hy);
+	}
+
+	// Set index to inIdx
+	Index = InIdx;
+	// Return the tile ID we are in	
+	return Tile;
+}
+
+shader SimpleTiles_Herring
+	[[ string help  = "<font size=+1><b>Simple Tiles</b></font><br>"
+		"Allows various kinds of Tiling. The Tiling Offset<br>"
+		"modifies the base parameter of the tiling layout,<br>" 
+		"and can generate different effects. ",
+       string category = "Textures",
+	   string label = "Simple Tiles Herring" ]]
+(
+	// Inputs
+	point UVW = point(u,v,0),
+	
+	float Scale   = 1.0
+		[[ float min=0.000001, float max=1000000.0 ]], 
+	int   TileMode  = 0 
+		[[ string widget  = "mapper", 
+		   string label   = "Tiling Mode",
+		   string options = 
+		       "|Herring Bond:0",
+		   string help="Choose the kind of tile pattern to use. "
+		               "The 'TilingOffset' parameter adjusts the "
+		               "appearance of the tiles."
+		   ]],		
+	float U_Count = 2.0
+		[[ string label = "Tiles in U",
+  		   float min=0.000001, float max=1000000.0 ]], 
+	float V_Count = 2.0	
+		[[ string label = "Tiles in V",
+  		   float min=0.000001, float max=1000000.0 ]], 
+	float TilingOffset = 0.5
+		[[ string label = "Tiling Offset",
+  		   float min=0.0, float max=1.0,
+  		   string help = "An adjustable parameter which changes "
+   		      "the appearance of the tiling. Does different things "
+  		      "for different Tiling Modes" ]], 
+	float GapWidth   = 0.1
+		[[ string label = "Gap Width",
+		   string help  = "The width of the gap between tiles",
+  		   float min=0.0, float max=10.0 ]], 
+	float Radius  = 0.2
+		[[ string label = "Corner Roundness",
+		   string help  = "Adds fillet radius to the corner of the tiles",
+  		   float min=0.0, float max=10.0 ]], 
+	float Edge      = 0.1
+		[[ string label = "Edge Width (for Bump)",
+		   string help  = "The width of a (slightly beveled) fake 'Edge' "
+		                  "to give the tile a more realistic appearance",
+  		   float min=0.0, float max=10.0 ]], 	
+	float EdgeBump = 1.0
+		[[ float min=-10.0, float max=10.0,
+		   string help  = "The amount of Edge bump effect" ]],	
+	float ColorBump = 0.0
+		[[ float min=-10.0, float max=10.0,
+		   string help  = "Adds some contribution of the color "
+		                  "settings to the Bump output" ]],		
+	color GapColor   = 0.2
+		[[ string label = "Gap Color", 
+		   string help  = "The color of the gap between tiles" ]], 
+	color TileColor1 = 0.4
+		[[ string label = "Tile Color 1",
+		   string help  = "First Tile Color"
+		 ]], 
+	color TileColor2 = 0.5
+		[[ string label = "Tile Color 2",
+		   string help  = "Second Tile Color"
+		 ]], 
+	color TileColor3 = 0.6
+		[[ string label = "Tile Color 3",
+		   string help  = "Third Tile Color. Not all Tiling Modes use this."		
+		 ]], 
+	
+	// Outputs
+	output color Col = 0.0,
+	output float Bump = 0.0,
+	output int   Tile = 0,
+	output int   TileIdx = 0,
+	output int   Index = 0	
+)
+{
+	int   Overlap   = 1;	
+	vector Tiling = vector(U_Count, V_Count, 0.0);
+	Col = GapColor;
+	point uvw = UVW * Tiling / Scale;
+	float to = TilingOffset;
+	float to2 = to*0.5;
+	
+	float Roundness = Radius / 10.0;
+
+	// Floor of UVW	
+	point fluvw = floor(uvw);
+	// Fractional UVW
+	point fruvw = uvw - fluvw;
+	
+	// Loop over neighbours
+	for (int xx = -Overlap; xx <= 0; xx++)
+	{
+		point lookup = uvw - fluvw - point(xx,0,0);
+		int   HitIdx = 0;
+		// Running Bond
+		// HerringBone
+		// Update by Mads Drøschler
+		
+		float h = 1./16.; // 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 = 16 steps
+		
+		if (TileMode == 0)
+		{
+			// Vertical
+			
+			if (Tile == 0) 
+				Tile = doRect(0 ,h, h*7, h*15, 1, 1, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*1 ,h*2, h*6, h*14, 1, 2, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*2 ,h*3, h*5, h*13, 1, 3, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*3 ,h*4, h*4, h*12, 1, 4, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*4 ,h*5, h*3, h*11, 1, 5, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*5 ,h*6, h*2, h*10, 1, 6, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*6 ,h*7, h, h*9, 1, 7, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*7 ,h*8, 0, h*8, 1, 8, Roundness, PARAM);
+			
+			if (Tile == 0) 
+				Tile = doRect(h*8 ,h*9, 0-to2, h*7, 1, 9, Roundness, PARAM);
+			
+			//ping
+			if (Tile == 0) 
+				Tile = doRect(h*9 ,h*10, -to2, h*6, 1, 10, Roundness, PARAM);
+			
+			if (Tile == 0) 
+				Tile = doRect(h*10 ,h*11, 0-to2, h*5, 1, 11, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*11 ,h*12, 0-to2, h*4, 1, 12, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*12 ,h*13, 0-to2, h*3, 1, 13, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*13 ,h*14, 0-to2, h*2, 1, 14, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*14 ,h*15, 0-to2, h*1, 1, 15, Roundness, PARAM);
+			
+			
+			// Horizontal
+			if (Tile == 0) 
+				Tile = doRect(h*8 ,h*16, h*7, h*8, 2, 16, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*9 ,h*13+to2, h*6, h*7, 2, 17, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*10 ,h*14+to2, h*5, h*6, 2, 18, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*11 ,h*15+to2, h*4, h*5, 2, 19, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*12 ,h*16+to2, h*3, h*4, 2, 20, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*13 ,h*17+to2, h*2, h*3, 2, 21, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*14 ,h*18+to2, h*1, h*2, 2, 22, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*15 ,h*19+to2, 0, h, 2, 23, Roundness, PARAM);
+			
+			if (Tile == 0) 
+				Tile = doRect(h*7 ,h*15, h*8, h*9, 2, 24, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*6 ,h*14, h*9, h*10, 2, 25, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*5 ,h*13, h*10, h*11, 2, 26, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*4 ,h*12, h*11, h*12, 2, 27, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*3 ,h*11, h*12, h*13, 2, 28, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*2 ,h*10, h*13, h*14, 2, 29, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h ,h*9, h*14, h*15, 2, 30, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(0 ,h*8, h*15, h*16, 2, 31, Roundness, PARAM);
+			
+			
+			// The last bits...
+			
+			if (Tile == 0) 
+				Tile = doRect(h*8 ,h*9, h*15, h*16+to2, 1, 9, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*9 ,h*10, h*14, h*16+to2, 1, 10, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*10 ,h*11, h*13, h*16+to2, 1, 11, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*11 ,h*12, h*12, h*16+to2, 1, 12, Roundness, PARAM);
+			if (Tile == 0) 
+				Tile = doRect(h*12 ,h*13, h*11, h*16+to2, 1, 13, Roundness, PARAM);
+ 			if (Tile == 0) 
+				Tile = doRect(h*13 ,h*14, h*10, h*16+to2, 1, 14, Roundness, PARAM);			
+			if (Tile == 0) 
+				Tile = doRect(h*14 ,h*15, h*9, h*16+to2, 1, 15, Roundness, PARAM);			
+			if (Tile == 0) 
+				Tile = doRect(h*15 ,h*16, h*8, h*16, 1, 16, Roundness, PARAM);	
+		}	
+	}
+		
+	if (Tile == 1) Col = TileColor1;		
+	if (Tile == 2) Col = TileColor2;
+	if (Tile == 3) Col = TileColor3;
+	
+	Bump *= EdgeBump;	
+	Bump += dot(0.3333, Col) * ColorBump;
+}

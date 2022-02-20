@@ -1,0 +1,176 @@
+vector Normal( vector uv, string tex, float r, float k)
+{
+    float a = 1.0/r;
+    vector uv1 = uv+a;    
+    vector uv2 = uv+a*vector(1,0,0);
+    vector uv3 = uv+a*vector(0,1,0);
+                                
+    vector A = texture(tex, uv1[0],1-uv1[1],"blur",k,"wrap","periodic");
+    vector B = texture(tex,uv2[0],1-uv2[1],"blur",k,"wrap","periodic");
+    vector C = texture(tex,uv3[0],1-uv3[1],"blur",k,"wrap","periodic" );
+         
+   	return (A[0]-vector(B[0],C[0],0));
+}
+
+vector rnm(vector A, vector B)
+{
+    vector a = A*vector(2,2,2)+vector(-1,-1,0);
+    vector b = B*vector(-2,-2,2)+vector(1,1,-1);
+    vector r = a*dot(a,b)/a[2]-b;
+
+    return r*0.5+0.5;
+}
+
+color TextureAlbedo (string Texture, float x, float y)
+{
+	return texture(Texture,x,1-y,"wrap", "periodic");
+	
+}
+
+// Texture blur
+color TextureBlur (string Texture, float x, float y, float blur)
+{
+	return texture(Texture,x,1-y,"blur", blur,"wrap", "periodic");
+}
+
+
+// Highpass filter
+color Highpass( output color base , color blur )
+{
+	base -=blur-0.5;
+	
+	return base = dot(base,vector(.2125, 0.7154, .0721));
+}
+
+// Luminosity blend
+color luminosity( color s, color d )
+{
+	float dLum = dot(d, color(0.3, 0.59, 0.11));
+	float sLum = dot(s, color(0.3, 0.59, 0.11));
+	float lum = sLum - dLum;
+	color c = d + lum;
+	float minC = min(min(c[0], c[1]), c[2]);
+	float maxC = max(max(c[0], c[1]), c[2]);	
+	if(minC < 0.0) return sLum + ((c - sLum) * sLum) / (sLum - minC);	
+	else if(maxC > 1.0) return sLum + ((c - sLum) * (1.0 - sLum)) / (maxC - sLum);
+	
+	else return c;	
+}
+
+// Albedo 
+color AlbedoPass(output color base, float x, float y, string Texture, float blur)
+{
+	color BitX_norm = TextureBlur(Texture,x,y,blur);	
+	color BitXx = base;
+	base = Highpass(base,BitX_norm);
+	
+	return base = luminosity(base,BitXx);
+}
+
+normal procedural_normal ( color x )
+{
+	vector U = normalize(Dx(P));
+    vector V = normalize(Dy(P));
+	vector A = normalize(calculatenormal(P+N*x));
+    float  ux = dot(U, A);
+    float  uy = dot(V, A);   
+    float  l  = sqrt(ux*ux+uy*uy);
+    float  uz = sqrt(1.0 - l*l);
+    
+    return color(ux,uy,uz) / 2.0 + 0.5; 
+}
+
+
+
+shader RPPBR[[string help ="<h3>RPPBR</h3>""PBR Generator<br>",string category = "Rebel Pack\RPPBR",]]
+( 
+	string Texture = ""[[string widget = "filename",string widget = "null",]],
+ 	point Po = point(u,v,0),
+ 	int Enable_NormalA = 1[[string widget = "checkBox",string widget = "null",int connectable = 0,]],
+	float MixA = 1.0[[float min = 0,float max = 1,string widget = "null",int connectable = 0,]],
+	float ResolutionA = 1000[[string widget = "null",int connectable = 0,]],
+ 	float StrengthA = 10[[string widget = "null",int connectable = 0,]],
+ 	float blurA = 20[[float min  = 0,string widget = "null",int connectable = 0,]],
+  	int Enable_NormalB = 1[[string widget = "checkBox",string widget = "null",int connectable = 0,]],
+	float MixB = 1.0[[float min = 0,float max = 1,string widget = "null",int connectable = 0,]],
+	float ResolutionB = 1000[[string widget = "null",int connectable = 0,]],
+ 	float StrengthB = 10[[string widget = "null",int connectable = 0,]],
+ 	float blurB = 5.5[[float min  = 0,string widget = "null",int connectable = 0,]],
+ 	int Enable_NormalC = 1[[string widget = "checkBox",string widget = "null",int connectable = 0,]],
+	float MixC = 1.0[[float min = 0,float max = 1,string widget = "null",int connectable = 0,]],
+	float ResolutionC = 1000[[string widget = "null",int connectable = 0,]],
+ 	float StrengthC = 5.0[[string widget = "null",int connectable = 0,]],
+ 	float blurC = 1.0[[float min  = 0,string widget = "null",int connectable = 0,]],
+	color External = color(0.5,0.5,1),
+ 	int Enable_External = 1[[string widget = "checkBox",string widget = "null",int connectable = 0,]],
+	float MixExternal = 0.2[[float min = 0,float max = 1,string widget = "null",int connectable = 0,]],
+	int is_procedural = 0[[string widget = "null", int connectable = 0]],
+	
+	// Albedo
+	float albedo_weight = 1[[
+	float min = 0,
+	float max = 100,
+	string widget = "null", int connectable = 0,
+	  ]],
+	int Enable_Albedo = 1[[string widget = "checkBox",string widget = "null",int connectable = 0,]],
+	
+	output color Diffuse = 0[[string label = "Diffuse/Albedo"]],
+	output color Metalness = 0[[string label = "Metalness N/A"]],
+	output color Roughness = 0[[string label = "Roughness N/A"]],
+	output color AO = 0[[string label = "AO N/A"]],
+	output normal Normals = 0,	
+	output vector Displacement = 0[[string label = "Displacment N/A"]],
+)
+{
+	//Inits
+	point uv = Po;
+	
+	// Diffuse/Albedo	
+	color text = Diffuse = texture(Texture,uv[0],1-uv[1]);
+	if ( Enable_Albedo == 1)
+	{
+		Diffuse = AlbedoPass(text,uv[0],1-uv[1],Texture,albedo_weight);
+	}
+	else
+	{
+	Diffuse = text;
+	}
+	
+	// Normals
+	color Base = color(0.5,0.5,1.0), pipeA,pipeB,pipeC,pipeD,External_procedural = 0;
+	float NormalBlurA = blurA/1000;
+	float NormalBlurB = blurB/1000;
+	float NormalBlurC = blurC/1000;
+   
+    // N1
+    vector A = Normal(uv,Texture,ResolutionA,NormalBlurA)*StrengthA+.5;
+	point NormalsA = vector(A[0],A[1],1);
+	
+	// N2
+	vector B = Normal(uv,Texture,ResolutionB,NormalBlurB)*StrengthB+.5;
+	point NormalsB = vector(B[0],B[1],1);
+	
+	// N3
+	vector C = Normal(uv,Texture,ResolutionC,NormalBlurC)*StrengthC+.5;
+	point NormalsC = vector(C[0],C[1],1);
+	
+	//Procedural Normals
+	if ( is_procedural >0 )
+	{
+		External_procedural = procedural_normal(External);
+	}
+	else
+	{
+		External_procedural =External;
+	}
+
+	// Normal Mixer
+	Enable_NormalA >0 ? pipeA = mix(NormalsA,Base,1-MixA) : pipeA = Base;
+	Enable_NormalB >0 ? pipeB = mix(NormalsB,Base,1-MixB) : pipeB = Base;
+	Enable_NormalC >0 ? pipeC = mix(NormalsC,Base,1-MixC) : pipeC = Base;
+	Enable_External >0 ?pipeD = mix(External_procedural,Base,1-MixExternal) : pipeD = Base;
+	
+	normal Mixer1 = rnm(pipeA,pipeB);
+	normal Mixer2 = rnm(Mixer1,pipeC);		
+	Normals = rnm(Mixer2,pipeD);
+}

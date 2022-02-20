@@ -1,0 +1,15 @@
+shader UV2Spherical
+(
+	point Po = point(u,v,0),
+	output point Out = 0,
+)
+{
+	float p = M_PI - Po[1] * M_PI;
+    float i = Po[0] * 2.0 * M_PI;
+    Out = vector(cos(i), 0.0, sin(i));
+	Out[1]   = clamp(cos(p), -1.0, 1.0);
+	float h = sqrt(1.0 - Out[1] * Out[1]);
+	float g = sqrt(1.0 - Out[1] * Out[1]);
+	Out *= vector(h,1,g);
+	Out *=100;
+}

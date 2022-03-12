@@ -1,0 +1,364 @@
+/*
+RPFlowmap.osl by Mads Drøschler 2022
+
+Use 
+http://teckartist.com/ToolsnStuff/FlowMapPainter-0.9.2-win32.zip 
+to paint maps in the initial version, Vertex paiter and support for Clovispainter to come.
+Use stock settings, no need to flip channels.
+
+To do:
+
+- Implement the Parallax layers for depth lookup.
+- Add the Vectex painter as input option.
+- Add Turbulent smoke derivative as option.
+- Fbm iterations ( a couple of types for various looks ).
+*/
+
+float Field
+(
+	point UVW,
+	float Scale,
+	int Octaves,
+	float Phase,
+	int StepFunction,
+	float LowStep,
+	float HiStep,
+	float Lacunarity,
+	float Gain,
+	int Normalize
+)
+{
+	float Out = 0;
+	point pnt = UVW / Scale;
+	float sum = 0;
+	float curFreq = 1.0;
+	float curAmp = 1;
+	
+	for (int i = 0; i < Octaves; i++)
+	{			
+		float ns = noise("uperlin", pnt * curFreq, Phase + i);
+		if (StepFunction)
+		ns = smoothstep(LowStep, HiStep, ns);
+		Out += ns * curAmp;
+		sum += curAmp;		
+		curFreq *= Lacunarity;
+		curAmp  *= Gain;		
+	}
+	if (Normalize)
+		Out /= sum ;
+
+		return Out;
+}
+
+vector rnm
+(
+	vector A, 
+	vector B
+)
+{
+    vector a = A * vector( 2,  2, 2) + vector(-1, -1,  0);
+    vector b = B * vector(-2, -2, 2) + vector( 1,  1, -1);
+    vector r = a * dot(a, b) / a[2] - b;
+    return r * 0.5 + 0.5;
+}
+
+vector Normals
+(
+	float x, 
+	vector y
+)
+{	
+    vector n = normalize(calculatenormal((P*(1/x)) + N * y));
+    float  ux = dot(normalize(Dx(P)), n);
+    float  uy = dot(normalize(Dy(P)), n);   
+    float  l  = sqrt(ux*ux+uy*uy);
+    float  uz = sqrt(1.0 - l*l);
+   
+	return vector(ux,uy,uz) / 2.0 + 0.5;
+}
+
+shader RPFlowMap
+[[	
+	string help 			 =	"<h3>Flowmap</h3>"
+				 				"Download External Flowpainter<br>",						
+	string URL				 =	"http://teckartist.com/ToolsnStuff/FlowMapPainter-0.9.2-win32.zip",
+	string category 		 = 	"Rebel Pack\RPUVW"
+]]
+(	
+	string Type = "Flowmap"
+	[[
+		int connectable 	= 0,
+		string widget 		= "null",
+		string widget 		= "popup", 
+		string options 		= "Flowmap|VertexPainter|ClovisMap"
+	]],
+	
+	string tex = ""
+	[[
+		string widget 		= "filename",
+		int connectable 	= 0,
+		string widget 		= "null"
+	]],
+	
+	float  ScaleA  = 0.06
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float  ScaleB  = 0.04
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	int   OctavesA    = 4
+	[[ 
+		string help 		= "Hos many layers of noise are mixed together",
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	
+	int   OctavesB    = 5
+	[[ 
+		string help 		= "Hos many layers of noise are mixed together",
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float LacunarityA = 2.0
+	[[ 
+		string help 		= "How much the 'frequency' of the noise changes per layer",
+		int connectable		= 0,
+		string widget		= "null"
+	]],	
+	
+	
+	float LacunarityB = 1.65
+	[[ 
+		string help 		= "How much the 'frequency' of the noise changes per layer",
+		int connectable		= 0,
+		string widget		= "null"
+	]],	
+	
+	float GainA       = 0.5
+	[[ 
+		string help 		= "How much the amplitude of the noise changes per layer. Higher numbers means higher noise frequencies have more effect.",		
+		int connectable		= 0,
+		string widget		= "null"
+	]],			
+	
+	float GainB       = 0.5
+	[[ 
+		string help 		= "How much the amplitude of the noise changes per layer. Higher numbers means higher noise frequencies have more effect.",		
+		int connectable		= 0,
+		string widget		= "null"
+	]],			
+	
+	int   StepFunctionA = 1 
+	[[ 
+		string widget		= "checkBox",
+		string label 		= "Step Function",
+		string help  		= "Enables a per-layer smoothstep curve in the noise, allowing you to increase the 'contrast' of the noise",	
+		int connectable		= 0,
+		string widget		= "null"			 
+    ]],
+    
+    int   StepFunctionB = 1 
+	[[ 
+		string widget		= "checkBox",
+		string label 		= "Step Function",
+		string help  		= "Enables a per-layer smoothstep curve in the noise, allowing you to increase the 'contrast' of the noise",	
+		int connectable		= 0,
+		string widget		= "null"			 
+    ]],
+    
+	float LowStepA = 0.5
+	[[ 
+		string help 		= "Low threshold of the smoothstep function.",
+		string label 		= "Low Step",
+		float  min 			= -1.0, 
+		float max 			= 1.0,
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float LowStepB = 0.5
+	[[ 
+		string help 		= "Low threshold of the smoothstep function.",
+		string label 		= "Low Step",
+		float  min 			= -1.0, 
+		float max 			= 1.0,
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+			
+	float HiStepA = 0.8
+	[[ 
+		string help 		= "High threshold of the smoothstep function.",
+		string label 		= "High Step",		
+		float  min 			= -1.0, 
+		float max 			= 1.0,
+		int connectable		= 0,
+		string widget		= "null"	
+	]],
+	
+	float HiStepB = 0.8
+	[[ 
+		string help 		= "High threshold of the smoothstep function.",
+		string label 		= "High Step",		
+		float  min 			= -1.0, 
+		float max 			= 1.0,
+		int connectable		= 0,
+		string widget		= "null"	
+	]],
+			
+	int   NormalizeA = 1 
+	[[ 
+		string widget		= "checkBox",
+		string help 		= "If the noise is auto-normalized to Amplitude or not.",
+		int connectable		= 0,
+		string widget		= "null"	
+	]],
+	
+	int   NormalizeB = 1 
+	[[ 
+		string widget		= "checkBox",
+		string help 		= "If the noise is auto-normalized to Amplitude or not.",
+		int connectable		= 0,
+		string widget		= "null"	
+	]],
+			
+	float PhaseA     = 0.0
+	[[ 
+		string help 		= "The 'Phase' is just a 4th coordinate of the noise, can be used to allow it to evolve over time, for example.",
+		int connectable		= 0,
+		string widget		= "null"
+	]],	
+	
+	float PhaseB     = 0.0
+	[[ 
+		string help 		= "The 'Phase' is just a 4th coordinate of the noise, can be used to allow it to evolve over time, for example.",
+		int connectable		= 0,
+		string widget		= "null"
+	]],	
+	
+	int Frame  = 0
+	[[ 
+		string label 		= "Frame #", 
+		int timeValue 		= 1, 
+		int connectable 	= 0, 
+		string widget 		= "null"
+	]],
+	
+	float LengthA = 0.13
+	[[	
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float LengthB = 0.13
+	[[	
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float SpeedA = 0.01
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float SpeedB = 0.01
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float Norm_StrengthA = 1.0
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float Norm_StrengthB = 1.0
+	[[
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float MixA = 1.0
+	[[ 
+		float min = 0,
+		float max = 1,
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	float MixB = 1.0
+	[[ 
+		float min = 0,
+		float max = 1,
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+	
+	int Enable_NormalA = 1
+	[[ 
+		string widget 		= "checkBox",
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+
+	int Enable_NormalB = 1
+	[[ 
+		string widget 		= "checkBox",
+		int connectable		= 0,
+		string widget		= "null"
+	]],
+
+	output vector Out = 0,	   
+)
+{
+	vector A_OutA,A_OutB,B_OutA,B_OutB;
+	vector NormalsA,NormalsB,AMixer,BMixer;
+	point Po = point(u,v,0);
+	vector Flowmap = texture(tex,u,1-v);
+	Flowmap = vector(1-Flowmap[0],1-Flowmap[1],0);
+	vector Map = Flowmap*2-1;
+		
+	// A pass
+	vector AOut = vector(Map[0],Map[1],0)*LengthA;	
+	float Time = Frame*SpeedA;
+	float TimeA = mod(Time,1);
+	float TimeB = mod(Time+ 0.5,1);
+	float Ph = PhaseA*Frame/10;
+	
+	A_OutA = Field(AOut*TimeA+Po,ScaleA,OctavesA,Ph+4,StepFunctionA,LowStepA,HiStepA,LacunarityA,GainA,NormalizeA);
+	A_OutB = Field(AOut*TimeB+Po,ScaleA,OctavesA,Ph+3.3,StepFunctionA,LowStepA,HiStepA,LacunarityA,GainA,NormalizeA);
+	AMixer = mix(A_OutA,A_OutB,abs(mod(Time,1)*2-1));
+	
+	NormalsA = Normals(Norm_StrengthB,AMixer);
+	
+	// B pass
+	vector BOut = vector(Map[0],Map[1],0)*LengthB;	
+	float BTime = Frame*SpeedB;
+	float BTimeA = mod(BTime,1);
+	float BTimeB = mod(BTime+ 0.5,1);
+	float BPh = PhaseB*Frame/10;
+	
+	B_OutA = Field(BOut*BTimeA+Po,ScaleB,OctavesB,BPh+4,StepFunctionB,LowStepB,HiStepB,LacunarityB,GainB,NormalizeB);
+	B_OutB = Field(BOut*BTimeB+Po,ScaleB,OctavesB,BPh+3.3,StepFunctionB,LowStepB,HiStepB,LacunarityB,GainB,NormalizeB);
+	BMixer = mix(B_OutA,B_OutB,abs(mod(BTime,1)*2-1));
+	
+	NormalsB = Normals(Norm_StrengthA,BMixer);
+	
+	// Normal Mixer
+	color C = color(0.5,0.5,1.0);	
+	Enable_NormalA? NormalsA = mix(NormalsA,C,1-MixA) : NormalsA = C;
+	Enable_NormalB? NormalsB = mix(NormalsB,C,1-MixB) : NormalsB = C;
+	
+	// Output a vector
+	Out = rnm(NormalsA,NormalsB);	
+}

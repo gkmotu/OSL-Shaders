@@ -100,7 +100,7 @@ shader RPFlowMap
 		string widget 		= "null"
 	]],
 	
-	float  ScaleA  = 0.06
+	float  ScaleA  = 0.1
 	[[
 		int connectable		= 0,
 		string widget		= "null"
@@ -120,14 +120,14 @@ shader RPFlowMap
 	]],
 	
 	
-	int   OctavesB    = 5
+	int   OctavesB    = 4
 	[[ 
 		string help 		= "Hos many layers of noise are mixed together",
 		int connectable		= 0,
 		string widget		= "null"
 	]],
 	
-	float LacunarityA = 2.0
+	float LacunarityA = 1.57
 	[[ 
 		string help 		= "How much the 'frequency' of the noise changes per layer",
 		int connectable		= 0,
@@ -135,7 +135,7 @@ shader RPFlowMap
 	]],	
 	
 	
-	float LacunarityB = 1.65
+	float LacunarityB = 1.66
 	[[ 
 		string help 		= "How much the 'frequency' of the noise changes per layer",
 		int connectable		= 0,
@@ -174,7 +174,7 @@ shader RPFlowMap
 		string widget		= "null"			 
     ]],
     
-	float LowStepA = 0.5
+	float LowStepA = 0.4
 	[[ 
 		string help 		= "Low threshold of the smoothstep function.",
 		string label 		= "Low Step",
@@ -184,7 +184,7 @@ shader RPFlowMap
 		string widget		= "null"
 	]],
 	
-	float LowStepB = 0.5
+	float LowStepB = 0.4
 	[[ 
 		string help 		= "Low threshold of the smoothstep function.",
 		string label 		= "Low Step",
@@ -230,14 +230,14 @@ shader RPFlowMap
 		string widget		= "null"	
 	]],
 			
-	float PhaseA     = 0.0
+	float PhaseA     = 0.05
 	[[ 
 		string help 		= "The 'Phase' is just a 4th coordinate of the noise, can be used to allow it to evolve over time, for example.",
 		int connectable		= 0,
 		string widget		= "null"
 	]],	
 	
-	float PhaseB     = 0.0
+	float PhaseB     = 0.5
 	[[ 
 		string help 		= "The 'Phase' is just a 4th coordinate of the noise, can be used to allow it to evolve over time, for example.",
 		int connectable		= 0,
@@ -248,29 +248,27 @@ shader RPFlowMap
 	[[ 
 		string label 		= "Frame #", 
 		int timeValue 		= 1, 
-		int connectable 	= 0, 
-		string widget 		= "null"
 	]],
 	
-	float LengthA = 0.13
+	float LengthA = 0.15
 	[[	
 		int connectable		= 0,
 		string widget		= "null"
 	]],
 	
-	float LengthB = 0.13
+	float LengthB = 0.15
 	[[	
 		int connectable		= 0,
 		string widget		= "null"
 	]],
 	
-	float SpeedA = 0.01
+	float SpeedA = 0.03
 	[[
 		int connectable		= 0,
 		string widget		= "null"
 	]],
 	
-	float SpeedB = 0.01
+	float SpeedB = 0.04
 	[[
 		int connectable		= 0,
 		string widget		= "null"
@@ -282,7 +280,7 @@ shader RPFlowMap
 		string widget		= "null"
 	]],
 	
-	float Norm_StrengthB = 1.0
+	float Norm_StrengthB = 0.93
 	[[
 		int connectable		= 0,
 		string widget		= "null"
@@ -339,7 +337,7 @@ shader RPFlowMap
 	A_OutB = Field(AOut*TimeB+Po,ScaleA,OctavesA,Ph+3.3,StepFunctionA,LowStepA,HiStepA,LacunarityA,GainA,NormalizeA);
 	AMixer = mix(A_OutA,A_OutB,abs(mod(Time,1)*2-1));
 	
-	NormalsA = Normals(Norm_StrengthB,AMixer);
+	NormalsA = Normals(Norm_StrengthA,AMixer);
 	
 	// B pass
 	vector BOut = vector(Map[0],Map[1],0)*LengthB;	
@@ -352,7 +350,7 @@ shader RPFlowMap
 	B_OutB = Field(BOut*BTimeB+Po,ScaleB,OctavesB,BPh+3.3,StepFunctionB,LowStepB,HiStepB,LacunarityB,GainB,NormalizeB);
 	BMixer = mix(B_OutA,B_OutB,abs(mod(BTime,1)*2-1));
 	
-	NormalsB = Normals(Norm_StrengthA,BMixer);
+	NormalsB = Normals(Norm_StrengthB,BMixer);
 	
 	// Normal Mixer
 	color C = color(0.5,0.5,1.0);	

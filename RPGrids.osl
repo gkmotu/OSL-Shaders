@@ -1,0 +1,16 @@
+// RPGrids.osl Mads Drøschler 2022 March
+// Public domain
+
+shader RPGrids
+[[
+	string category = "Rebel Pack\RPFields",
+	string help ="<h3>RPGrids</h3>""Fetch and grade volume grids<br>"
+]]
+(
+	string Grid = "density",
+	output vector Out = 0,
+)
+{
+	Out = texture3d(Grid,P);
+
+}

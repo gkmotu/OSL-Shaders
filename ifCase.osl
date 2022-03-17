@@ -1,0 +1,14 @@
+// Mads Drøschler March 2022
+// educational shader to gate integer numbers
+// license MIT
+
+shader ifCase 
+(
+	int frame = 0,
+	output int Out = 0,
+)
+{
+	frame < 100 ? Out = 0 : Out;
+	frame >= 100 and frame < 200 ? Out = 1 : Out;
+	frame >= 200 and frame < 300 ? Out = 2 : Out;	
+}

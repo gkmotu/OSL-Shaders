@@ -1,0 +1,111 @@
+// Stochastic.osl
+// Mads Drøschler 4th January 2022.
+// Inspiration - https://gist.github.com/unitycoder/6c09f186da7c626e534f16f8c4063bef
+// License Public Domain
+
+// Use cases:
+// You can use this shader to generate infinite large variation of textures if you were to sit with a small texture you like and want to apply it on a large surface.
+// You can also use the Tile feature, and bake out seamless tiling textures at any resolution based on the initial small map, useful for gaming textures that needs upressing while adding randomization and actual size while introducing seamless tiling on same time.
+
+/*
+TODO
+
+*/
+
+
+float fract ( float x) 
+{
+	return x-floor(x);
+}
+
+
+vector TileHash ( output vector x, int tileSize, int seed, int Tiling ) 
+{
+	Tiling >0? x=mod(x,tileSize) : x=x;
+
+		return noise("hash",x,seed);
+}
+
+shader RPStochastic
+
+(
+	string Texture = ""
+	[[
+		string widget = "filename",
+	]],
+	
+	int Tiling = 0,
+	
+	
+	int tileSize = 10
+	[[
+		int connectable = 0,
+		int min = 1,
+	]],
+	int seed = 42,
+	
+	float Scale = 2,
+	
+	float Rotate = 0,
+	
+	float blur =0,
+	
+	float aa = 1.3,
+	
+  	output color Out = 0,
+)
+{
+// INITS
+	point uv = point(u,v,0);
+	
+	// Transforms		
+	vector RotCenter = vector(0.5,0.5,0);
+	vector RotAxis = vector(0,0,1);
+
+	uv = rotate(uv, radians(Rotate), RotCenter, RotCenter + RotAxis);
+	uv -=0.5;
+	uv /=Scale;
+	uv *= 4.0;
+
+	point skewUVa = transform ( matrix (1.0 , 0.0 ,0,0, -0.57735027 , 1.15470054,0,0,0,0,0,0,0,0,0,0) , (vector(uv[0],uv[1],0) * 3.464) );
+    point skewUV = vector(skewUVa[0],skewUVa[1],0);
+
+	vector vxID = vector (floor(skewUV[0]),floor(skewUV[1]),0);
+    vector barry = vector (fract(skewUV[0]),fract(skewUV[1]), 0);
+    barry[2] = 1.0-barry[0]-barry[1];
+     
+    matrix a = matrix(vxID[0],vxID[1],0,0,vxID[0],vxID[1]+1,0,0,vxID[0]+1,vxID[1],0,0,barry[2],barry[1],barry[0],0);
+    matrix b = matrix(vxID[0]+1,vxID[1]+1,0,0,vxID[0]+1,vxID[1],0,0,vxID[0],vxID[1]+1,0,0,-barry[2],1-barry[1], 1-barry[0],0);
+	
+	// Sorting
+	float t1; barry[2]>0?t1 = a[0][0] :t1 = b[0][0];
+	float t2; barry[2]>0?t2 = a[0][1] :t2 = b[0][1];	
+	float t5; barry[2]>0?t5 = a[1][0] :t5 = b[1][0];
+	float t6; barry[2]>0?t6 = a[1][1] :t6 = b[1][1];	
+	float t9; barry[2]>0?t9 = a[2][0] :t9 = b[2][0];
+	float t10;barry[2]>0?t10 = a[2][1] :t10 = b[2][1];	
+	float t13;barry[2]>0?t13 = a[3][0] :t13 = b[3][0];
+	float t14;barry[2]>0?t14 = a[3][1] :t14 = b[3][1];
+	float t15;barry[2]>0?t15 = a[3][2] :t15 = b[3][2];
+ 
+    //blend samples with calculated weights    
+    vector uv1 = uv + TileHash(vector(t1,t2,0),tileSize,seed,Tiling);
+    vector uv2 = uv + TileHash(vector(t5,t6,0),tileSize,seed,Tiling);
+    vector uv3 = uv + TileHash(vector(t9,t10,0),tileSize,seed,Tiling);
+        
+    // Linear blend
+    color Color  = (texture(Texture,  uv1[0],1-uv1[1], "wrap", "periodic")* t13) 
+                 + (texture(Texture, uv2[0],1-uv2[1], "wrap", "periodic")* t14) 
+                 + (texture(Texture, uv3[0],1-uv3[1], "wrap", "periodic")* t15);
+                 
+   
+    // Mean
+    color Mean 	= texture(Texture,  uv1[0],1-uv1[1],"blur", blur, "wrap", "periodic")*t13 
+    			+ texture(Texture, uv2[0],1-uv2[1],"blur",blur, "wrap", "periodic")*t14 
+    			+ texture(Texture, uv3[0],1-uv3[1],"blur",blur, "wrap", "periodic")*t15;
+               
+    // Variance Preserving Blend
+    float s = t13+t14+t15;
+    Out = Mean +(Color-s*Mean)/sqrt(t13*t13 +t14*t14 + t15*t15);
+    Out = pow(Out,2.2);
+}
